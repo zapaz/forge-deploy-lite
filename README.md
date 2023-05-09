@@ -1,7 +1,7 @@
 
 # forge-deploy-lite
 
-DeployLite is a [One Script library](src/DeployLite.sol) to deploy contract with forge
+DeployLite is a [One Script library](https://github.com/zapaz/forge-deploy-lite/blob/main/script/DeployLite.sol) to deploy contract with forge
 
 
 ## prerequesites
