@@ -1,0 +1,10 @@
+{
+  "1": {
+    "chainName": "mainnet",
+    "Counter": ""
+  },
+  "11155111": {
+    "chainName": "sepolia",
+    "Counter": ""
+  }
+}
