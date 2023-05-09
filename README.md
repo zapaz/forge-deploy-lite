@@ -39,7 +39,7 @@ example :
 import {DeployLite} from "script/DeployLite.sol";
 import {Counter} from "src/Counter.sol";
 
-contract DeployCounter is DeployLib {
+contract DeployCounter is DeployLite {
     function deployCounter() public returns (address counter) {
         vm.startBroadcast();
 
