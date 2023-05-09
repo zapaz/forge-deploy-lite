@@ -58,7 +58,7 @@ contract DeployCounter is DeployLib {
 }
 
 ```
-**Mandatory** For the deployment script of `WhateverContract` contract use exactly this name  : `DeployWhateverContract`
+**Mandatory** For the deployment function of `WhateverContract` use exactly this name  : `deployWhateverContract`
 
 On each deploy, `DeployLite` check onchain if bytecode is already deployed.
 
