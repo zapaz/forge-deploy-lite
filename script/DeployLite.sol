@@ -1,12 +1,12 @@
-// SPDX-License-Identifier: UNLICENSED
-pragma solidity ^0.8.13;
+// SPDX-License-Identifier: MIT
+pragma solidity ^0.8.9;
 
 import "forge-std/Script.sol";
 
 contract DeployLite is Script {
     string constant ADDRESSES_FILE = "addresses.json";
     address deployer;
-    
+
     function writeAddress(string memory name, address addr) public {
         string memory path = string.concat(".", vm.toString(block.chainid), ".", name);
         vm.writeJson(vm.toString(addr), ADDRESSES_FILE, path);

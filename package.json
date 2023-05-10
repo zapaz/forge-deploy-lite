@@ -1,0 +1,21 @@
+{
+  "name": "forge-deploy-lite",
+  "version": "0.0.2",
+  "description": "One Script library to deploy contracts with forge and register addresses",
+  "main": "",
+  "scripts": {
+    "clean": "forge clean",
+    "build": "forge build",
+    "test": "forge test",
+    "format": "forge fmt",
+    "simulate": "forge script script/DeployCounter.s.sol --rpc-url $CHAIN_NAME",
+    "deploy": "forge script script/DeployCounter.s.sol --private-key $PRIVATE_KEY --rpc-url $CHAIN_NAME --broadcast --verify"
+  },
+  "keywords": [
+    "forge",
+    "deployment",
+    "addresses"
+  ],
+  "author": "zapaz.eth",
+  "license": "MIT"
+}

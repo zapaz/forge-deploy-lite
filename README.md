@@ -30,10 +30,14 @@ example :
   }
 }
 ```
+- set PRIVATE_KEY in your ENV
 
-note that `chainName` field is optionnal, and that you can also add whatever fields
 
-- set PRIVATE_KEY and INFURA_API_KEY (or any provider key if needed) in your ENV
+#### OPTIONAL
+- `chainName` field is optional, but convenient for human readibility
+- whatever fields can also be added  manually in `addresses.json`
+- set INFURA_API_KEY (or any provider key needed), CHAIN_NAME and CONTRACT_NAME in your ENV
+- setup `npm`
 
 ## howto
 
@@ -72,22 +76,31 @@ DeployLite checks onchain if bytecode is already deployed, and then stops if thi
 
 DeployLite links `deploy("Counter")` to `deployCounter` via a low level `call` that changes `msg.sender` (to the deploy script address), so use `deployer` instead (similar reason to OZ `_msgSender()`)
 
-#### simulate deployment of your contract :
+#### simulate contract deployment :
+
+To simulate deployment of your contract, launch the following command:
 
 ```bash
-forge script script/Deploy<ContractName>.s.sol --rpc-url <ChainName>
+npm run simulate
+```
+or explicitly, simulate `Counter` on Sepolia:
+```bash
+forge script script/DeployCounter.s.sol --rpc-url sepolia
 ```
 
-#### deploy Counter.sol on Sepolia :
+
+#### deploy contract :
+
+To deploy and verify your contract, launch the following command:
 
 ```bash
-forge script script/Deploy<ContractName>.s.sol  --private-key $PRIVATE_KEY --rpc-url <ChainName> --broadcast
+npm run deploy
 ```
 
-example, to deploy `Counter` on Sepolia
+or explicitly, deploy and verify `Counter` on Sepolia:
 
 ```bash
-forge script script/DeployCounter.s.sol  --private-key $PRIVATE_KEY --rpc-url sepolia --broadcast
+forge script script/DeployCounter.s.sol  --private-key $PRIVATE_KEY --rpc-url sepolia --broadcast --verify
 ```
 
 #### read deployed addresses :
@@ -106,7 +119,7 @@ But if you have to redeploy contract with same bytecode, but different params, j
 
 You can deploy multiple contracts at the same time, in the same block !
 
-Just write a `Deploy<Contract>.s.sol` for each contract and a `DeployAll.s.sol` script with `run` inluding multiple `deploy("<ContractName>")`calls like this :
+Just write a `Deploy<Contract>.s.sol` for each contract and a `DeployAll.s.sol` script with `run` inluding multiple `deploy("CONTRA${CT_NAME}")`calls like this :
 
 ```solidity
 contract DeployAll is Contract, Contract2{
@@ -120,6 +133,17 @@ contract DeployAll is Contract, Contract2{
 
 It is recommended to deploy contracts one by one the first time, then you can use `DeployAll` (with same compiler options), as it will only change modified contracts.
 
+#### deploy to other networks
+
+- to add `<my-network>` add its rpc-url in `foundry.toml` file :
+
+```toml
+[rpc_endpoints]
+<my-network> = "https://<myurl>/${<OPTIONAL_KEY}"
+```
+
+- change CHAIN_NAME to `<my-network>` in your ENV
+
 ## todo
 
 - suppress need of `addresses.json` initialization (`writeJson` limitation)
@@ -127,7 +151,7 @@ It is recommended to deploy contracts one by one the first time, then you can us
 - manage zkSync Era specific deployment
 - ...
 
-Any suggestions welcome!
+Any suggestions welcome! (just open an issue or a PR)
 
 ## aknowledgement
 
