@@ -1,5 +1,6 @@
 [profile.default]
 fs_permissions = [{ access = "read-write", path = "./"}]
+bytecode_hash = "none" # to get deterministic deployed code
 
 [rpc_endpoints]
 mainnet = "https://mainnet.infura.io/v3/${INFURA_API_KEY}"

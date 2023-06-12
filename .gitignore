@@ -1,3 +1,9 @@
+# forge-deploy-lite file
+addresses.json
+
+# Env file
+.env
+
 # Compiler files
 cache/
 out/
@@ -9,6 +15,3 @@ out/
 
 # Docs
 docs/
-
-# Env file
-.env*

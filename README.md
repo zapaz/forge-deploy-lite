@@ -5,6 +5,9 @@ DeployLite is a [One Script library](https://github.com/zapaz/forge-deploy-lite/
 ## setup
 
 - [install forge](https://book.getfoundry.sh/getting-started/installation)
+- add [DeployLite.sol](script/DeployLite.sol) to your project, either  :
+  - copy the file directly
+  - or with foundry, run `forge install zapaz/forge-deploy-lite` then import `lib/forge-deploy-lite/script/DeployLite.sol`
 - initialize `addresses.json` file for the target network with :
 
 ```json
@@ -30,14 +33,11 @@ example :
   }
 }
 ```
-- set PRIVATE_KEY in your ENV
 
 
 #### OPTIONAL
 - `chainName` field is optional, but convenient for human readibility
 - whatever fields can also be added  manually in `addresses.json`
-- set INFURA_API_KEY (or any provider key needed), CHAIN_NAME and CONTRACT_NAME in your ENV
-- setup `npm`
 
 ## howto
 
@@ -81,10 +81,6 @@ DeployLite links `deploy("Counter")` to `deployCounter` via a low level `call` t
 To simulate deployment of your contract, launch the following command:
 
 ```bash
-npm run simulate
-```
-or explicitly, simulate `Counter` on Sepolia:
-```bash
 forge script script/DeployCounter.s.sol --rpc-url sepolia
 ```
 
@@ -94,13 +90,7 @@ forge script script/DeployCounter.s.sol --rpc-url sepolia
 To deploy and verify your contract, launch the following command:
 
 ```bash
-npm run deploy
-```
-
-or explicitly, deploy and verify `Counter` on Sepolia:
-
-```bash
-forge script script/DeployCounter.s.sol  --private-key $PRIVATE_KEY --rpc-url sepolia --broadcast --verify
+forge script script/DeployCounter.s.sol --rpc-url sepolia --broadcast --verify  --<wallet params>
 ```
 
 #### read deployed addresses :
@@ -114,6 +104,8 @@ cat addresses.json
 By default will not redeploy if bytecode is already deployed.
 
 But if you have to redeploy contract with same bytecode, but different params, just delete the address manually from `adresses.json` (or move it to some `Counter.old.1` field, to keep history of all addresses)
+
+Add `bytecode_hash = "none"` in your `foundry.toml` file, otherwise you will get metadata hash at the end of your deployed code, making it undeterministic: i.e. will change every time you change a comment
 
 #### deploy multiple contracts
 
@@ -132,17 +124,6 @@ contract DeployAll is Contract, Contract2{
 ```
 
 It is recommended to deploy contracts one by one the first time, then you can use `DeployAll` (with same compiler options), as it will only change modified contracts.
-
-#### deploy to other networks
-
-- to add `<my-network>` add its rpc-url in `foundry.toml` file :
-
-```toml
-[rpc_endpoints]
-<my-network> = "https://<myurl>/${<OPTIONAL_KEY}"
-```
-
-- change CHAIN_NAME to `<my-network>` in your ENV
 
 ## todo
 
