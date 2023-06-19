@@ -1,20 +1,18 @@
 # forge-deploy-lite
 
-DeployLite is a [One Script library](https://github.com/zapaz/forge-deploy-lite/blob/main/script/DeployLite.sol) to deploy contracts with forge and register addresses
+DeployLite is a forge script to help deployment of contracts with forge and register deployed addresses in a json file
 
 ## setup
 
 - [install forge](https://book.getfoundry.sh/getting-started/installation)
-- add [DeployLite.sol](script/DeployLite.sol) to your project, either  :
-  - copy the file directly
-  - or with foundry, run `forge install zapaz/forge-deploy-lite` then import `lib/forge-deploy-lite/script/DeployLite.sol`
+- install forge-deploy-lite to your project, with  :
+    `forge install zapaz/forge-deploy-lite`
 - initialize `addresses.json` file for the target network with :
 
 ```json
 {
   "<chain-id>": {
-    "chainName": "<chain-name>",
-    "Counter": ""
+    "chainName": "<chain-name>"
   }
 }
 ```
@@ -24,12 +22,10 @@ example :
 ```json
 {
   "1": {
-    "chainName": "mainnet",
-    "Counter": ""
+    "chainName": "mainnet"
   },
   "11155111": {
-    "chainName": "sepolia",
-    "Counter": ""
+    "chainName": "sepolia"
   }
 }
 ```
@@ -96,7 +92,7 @@ forge script script/DeployCounter.s.sol --rpc-url sepolia --broadcast --verify  
 #### read deployed addresses :
 
 ```bash
-cat addresses.json
+cat json/addresses.json
 ```
 
 #### redeploy same contract

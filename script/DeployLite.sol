@@ -2,22 +2,10 @@
 pragma solidity ^0.8.9;
 
 import "forge-std/Script.sol";
+import "script/ReadWriteJson.sol";
 
-contract DeployLite is Script {
-    string constant ADDRESSES_FILE = "addresses.json";
+contract DeployLite is Script, ReadWriteJson {
     address deployer;
-
-    function writeAddress(string memory name, address addr) public {
-        string memory path = string.concat(".", vm.toString(block.chainid), ".", name);
-        vm.writeJson(vm.toString(addr), ADDRESSES_FILE, path);
-    }
-
-    function readAddress(string memory name) public view returns (address) {
-        string memory jsonFile = vm.readFile(ADDRESSES_FILE);
-        string memory path = string.concat(".", vm.toString(block.chainid), ".", name);
-
-        return abi.decode(vm.parseJson(jsonFile, path), (address));
-    }
 
     function isDeployed(string memory name) public view returns (bool deployed, address addr, bytes memory code) {
         addr = readAddress(name);
@@ -41,7 +29,6 @@ contract DeployLite is Script {
                 console.log("%s previous deployement at @%s (%s bytes)", name, addr, addr.code.length);
             }
             console.log("%s deploying... (%s bytes)", name, code.length);
-            // console.logBytes(code);
 
             string memory deployFunction = string.concat("deploy", name, "()");
             (bool success, bytes memory result) = address(this).call(abi.encodeWithSignature(deployFunction));
