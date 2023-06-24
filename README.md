@@ -92,7 +92,7 @@ forge script script/DeployCounter.s.sol --rpc-url sepolia --broadcast --verify  
 #### read deployed addresses :
 
 ```bash
-cat json/addresses.json
+cat addresses.json
 ```
 
 #### redeploy same contract
@@ -122,8 +122,7 @@ contract DeployAll is Contract, Contract2{
 It is recommended to deploy contracts one by one the first time, then you can use `DeployAll` (with same compiler options), as it will only change modified contracts.
 
 ## todo
-
-- suppress need of `addresses.json` initialization (`writeJson` limitation)
+- support immutable variables
 - manage deployment failure... i.e. not writing addresses in this case
 - manage zkSync Era specific deployment
 - ...

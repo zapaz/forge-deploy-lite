@@ -23,8 +23,47 @@ contract ReadWriteJsonTest is Test {
         rwJson = new ReadWriteJson();
     }
 
-    function testOK() public {
+    function testOK() public pure {
         assert(true);
+    }
+
+    function test_existsJsonFile() public {
+        assertTrue(rwJson.existsJsonFile());
+
+        rwJson.setJsonFile("addresses.json");
+        assertTrue(rwJson.existsJsonFile());
+
+        rwJson.setJsonFile("json.addresses");
+        assertFalse(rwJson.existsJsonFile());
+    }
+
+    function test_createJsonFile() public {
+        string memory jsonFile = "test/json/test_createJsonFile.json";
+        rwJson.setJsonFile(jsonFile);
+
+        if (rwJson.existsJsonFile()) vm.removeFile(jsonFile);
+        assertFalse(rwJson.existsJsonFile());
+
+        rwJson.createJsonFile();
+        assertTrue(rwJson.existsJsonFile());
+    }
+
+    function test_existsJsonNetwork() public {
+        rwJson.setJsonFile("test/json/test_existsJsonNetwork.json");
+        assertTrue(rwJson.existsJsonNetwork());
+
+        rwJson.setJsonFile("test/json/test_existsJsonNetworkNot.json");
+        assertFalse(rwJson.existsJsonNetwork());
+    }
+
+    function test_createJsonNetwork() public {
+        string memory jsonFile = "test/json/test_createJsonNetwork.json";
+        rwJson.setJsonFile(jsonFile);
+
+        if (!rwJson.existsJsonNetwork()) {
+            rwJson.createJsonNetwork();
+            assertTrue(rwJson.existsJsonNetwork());
+        }
     }
 
     function test_setUpJson() public {

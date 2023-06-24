@@ -52,10 +52,12 @@ library LibString {
                         }
                         result := add(result, replacementLength)
                         subject := add(subject, searchLength)
-                        if searchLength {
-                            if iszero(lt(subject, subjectSearchEnd)) { break }
-                            continue
-                        }
+                        // if searchLength {
+                        //     if iszero(lt(subject, subjectSearchEnd)) { break }
+                        //     continue
+                        // }
+                        // ONLY replace once => if REPLACE done THEN break
+                        break
                     }
                     mstore(result, t)
                     result := add(result, 1)

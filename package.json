@@ -1,6 +1,6 @@
 {
   "name": "forge-deploy-lite",
-  "version": "0.0.4",
+  "version": "0.0.5",
   "description": "One Script library to deploy contracts with forge and register addresses",
   "main": "",
   "scripts": {
