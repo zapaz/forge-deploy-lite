@@ -23,22 +23,22 @@ contract ReadWriteJsonTest is Test {
         rwJson = new ReadWriteJson();
     }
 
-    function testOK() public pure {
+    function test_OK() public pure {
         assert(true);
     }
 
     function test_existsJsonFile() public {
         assertTrue(rwJson.existsJsonFile());
 
-        rwJson.setJsonFile("addresses.json");
-        assertTrue(rwJson.existsJsonFile());
-
         rwJson.setJsonFile("json.addresses");
         assertFalse(rwJson.existsJsonFile());
+
+        rwJson.setJsonFile("addresses.json");
+        assertTrue(rwJson.existsJsonFile());
     }
 
-    function test_createJsonFile() public {
-        string memory jsonFile = "test/json/test_createJsonFile.json";
+    function test_createsJsonFile() public {
+        string memory jsonFile = "test/json/test_createsJsonFile.json";
         rwJson.setJsonFile(jsonFile);
 
         if (rwJson.existsJsonFile()) vm.removeFile(jsonFile);
@@ -56,8 +56,8 @@ contract ReadWriteJsonTest is Test {
         assertFalse(rwJson.existsJsonNetwork());
     }
 
-    function test_createJsonNetwork() public {
-        string memory jsonFile = "test/json/test_createJsonNetwork.json";
+    function test_createsJsonNetwork() public {
+        string memory jsonFile = "test/json/test_createsJsonNetwork.json";
         rwJson.setJsonFile(jsonFile);
 
         if (!rwJson.existsJsonNetwork()) {
@@ -104,6 +104,6 @@ contract ReadWriteJsonTest is Test {
     function test_readAddressNotExists() public {
         setUpJson("test_readAddressNotExists");
 
-        assertEq(rwJson.readAddress("NoTestHere"), address(0x20));
+        assertEq(rwJson.readAddress("NoTestHere"), address(0));
     }
 }

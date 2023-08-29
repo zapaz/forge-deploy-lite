@@ -19,7 +19,12 @@ contract ReadWriteJson is Script, IReadWriteJson {
         string memory jsonKey = string.concat(".", vm.toString(block.chainid));
         if (bytes(name).length > 0) jsonKey = string.concat(jsonKey, ".", name);
 
-        return abi.decode(vm.parseJson(json, jsonKey), (address));
+        bytes memory jsonBytes = vm.parseJson(json, jsonKey);
+        if (bytesEqual(jsonBytes, "")) {
+            return address(0);
+        } else {
+            return abi.decode(jsonBytes, (address));
+        }
     }
 
     function writeAddress(string memory name, address addr) public override(IReadWriteJson) {
@@ -66,7 +71,8 @@ contract ReadWriteJson is Script, IReadWriteJson {
         //     "chainName": ""
         //   }
         // }
-        string memory jsonNetworkEmpty = string.concat("{\n  \"", vm.toString(block.chainid), "\": {\n  \"chainName\": \"\"}\n}");
+        string memory jsonNetworkEmpty =
+            string.concat("{\n  \"", vm.toString(block.chainid), "\": {\n    \"chainName\": \"\"\n  }\n}");
 
         vm.writeFile(jsonFile, jsonNetworkEmpty);
     }
@@ -91,7 +97,8 @@ contract ReadWriteJson is Script, IReadWriteJson {
         // {
         //   "31337": {
         //   },
-        string memory replacement = string.concat("{\n  \"", vm.toString(block.chainid), "\": {\n  \"chainName\": \"\"},");
+        string memory replacement =
+            string.concat("{\n  \"", vm.toString(block.chainid), "\": {\n  \"chainName\": \"\"},");
 
         vm.writeFile(jsonFile, vm.readFile(jsonFile).replace(search, replacement));
     }
@@ -109,8 +116,9 @@ contract ReadWriteJson is Script, IReadWriteJson {
 
         string memory json = vm.readFile(jsonFile);
         string memory jsonKey = string.concat(".", vm.toString(block.chainid));
+        bytes memory res = vm.parseJson(json, jsonKey);
 
-        return !bytesEqual(vm.parseJson(json, jsonKey), abi.encode(""));
+        return !bytesEqual(res, "");
     }
 
     function bytesEqual(bytes memory b1, bytes memory b2) internal pure returns (bool) {
