@@ -1,48 +1,51 @@
 # forge-deploy-lite
 
-DeployLite is a forge script to help deployment of contracts with forge and register deployed addresses in a json file
+DeployLite is a forge script to help contract deployments on mutliple evm networks
+
+DeployLite registers deployed addresses in a single json file, to be used by your frontend UI
 
 ## setup
 
-- [install forge](https://book.getfoundry.sh/getting-started/installation)
-- install forge-deploy-lite to your project, with  :
-    `forge install zapaz/forge-deploy-lite`
-- initialize `addresses.json` file for the target network with :
+### install
+install `forge-deploy-lite` into your foundry project with:
 
-```json
-{
-  "<chain-id>": {
-    "chainName": "<chain-name>"
-  }
-}
+```sh
+forge install zapaz/forge-deploy-lite
 ```
 
-example :
+### configuration
+setup your foundry configuration, with specific `fs_permissions` and `bytecode_hash` settings,
+here is an example :
 
-```json
-{
-  "1": {
-    "chainName": "mainnet"
-  },
-  "11155111": {
-    "chainName": "sepolia"
-  }
-}
+`foundry.toml`
+```toml
+[profile.default]
+src = "src"
+out = "out"
+libs = ["lib"]
+
+# to write to addresses.json
+fs_permissions = [
+  {  access = "read-write", path = "./addresses.json"},
+  {  access = "read-write", path = "./out"}]
+# to get deterministic deployed code
+bytecode_hash = "none"
+
+[rpc_endpoints]
+sepolia = "https://rpc.ankr.com/eth_sepolia"
 ```
 
 
-#### OPTIONAL
-- `chainName` field is optional, but convenient for human readibility
-- whatever fields can also be added  manually in `addresses.json`
-
-## howto
-
-#### write your deploy script :
+#### script
 
 The `Counter` deploy script is as follow, to be writen in a file `DeployCounter.s.sol` :
 
+`script/DeployCounter.s.sol`
 ```solidity
-import {DeployLite} from "script/DeployLite.sol";
+// SPDX-License-Identifier: MIT
+pragma solidity ^0.8.0;
+
+import {DeployLite} from "lib/forge-deploy-lite/script/DeployLite.sol";
 import {Counter} from "src/Counter.sol";
 
 contract DeployCounter is DeployLite {
@@ -63,7 +66,6 @@ contract DeployCounter is DeployLite {
         deploy("Counter");
     }
 }
-
 ```
 
 For your contract, just replace everywhere `Counter` by the name of your contract (in imports, text field, and function/contracts/file names).
@@ -72,7 +74,9 @@ DeployLite checks onchain if bytecode is already deployed, and then stops if thi
 
 DeployLite links `deploy("Counter")` to `deployCounter` via a low level `call` that changes `msg.sender` (to the deploy script address), so use `deployer` instead (similar reason to OZ `_msgSender()`)
 
-#### simulate contract deployment :
+## deploy
+
+#### simulate contract deployment
 
 To simulate deployment of your contract, launch the following command:
 
@@ -80,8 +84,7 @@ To simulate deployment of your contract, launch the following command:
 forge script script/DeployCounter.s.sol --rpc-url sepolia
 ```
 
-
-#### deploy contract :
+#### deploy contract
 
 To deploy and verify your contract, launch the following command:
 
@@ -89,19 +92,11 @@ To deploy and verify your contract, launch the following command:
 forge script script/DeployCounter.s.sol --rpc-url sepolia --broadcast --verify  --<wallet params>
 ```
 
-#### read deployed addresses :
-
-```bash
-cat addresses.json
-```
-
 #### redeploy same contract
 
 By default will not redeploy if bytecode is already deployed.
 
 But if you have to redeploy contract with same bytecode, but different params, just delete the address manually from `adresses.json` (or move it to some `Counter.old.1` field, to keep history of all addresses)
-
-Add `bytecode_hash = "none"` in your `foundry.toml` file, otherwise you will get metadata hash at the end of your deployed code, making it undeterministic: i.e. will change every time you change a comment
 
 #### deploy multiple contracts
 
@@ -120,6 +115,32 @@ contract DeployAll is Contract, Contract2{
 ```
 
 It is recommended to deploy contracts one by one the first time, then you can use `DeployAll` (with same compiler options), as it will only change modified contracts.
+
+## addresses.json
+
+#### read deployed addresses
+
+```bash
+cat addresses.json
+```
+
+#### example
+
+here is a example of the resulting file:
+
+`addresses.json`
+```json
+{
+  "31337": {
+    "chainName": "local",
+    "Counter": "0x90193C961A926261B756D1E5bb255e67ff9498A1"
+  },
+  "11155111": {
+    "chainName": "sepolia",
+    "Counter": "0x34A1D3fff3958843C43aD80F30b94c510645C316"
+  }
+}
+```
 
 ## todo
 - support immutable variables
