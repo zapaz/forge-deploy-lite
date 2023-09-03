@@ -15,7 +15,7 @@ forge install zapaz/forge-deploy-lite
 
 ### configuration
 setup your foundry configuration, with specific `fs_permissions` and `bytecode_hash` settings,
-here is an example :
+here is an example:
 
 `foundry.toml`
 ```toml

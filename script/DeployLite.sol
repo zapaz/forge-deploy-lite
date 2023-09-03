@@ -18,6 +18,8 @@ contract DeployLite is Script, ReadWriteJson {
     }
 
     function deploy(string memory name) public returns (address) {
+        if (!existsJsonFile()) createJsonFile();
+
         deployer = msg.sender;
 
         (bool deployed, address addr, bytes memory code) = isDeployed(name);
