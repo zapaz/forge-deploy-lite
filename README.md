@@ -14,7 +14,7 @@ forge install zapaz/forge-deploy-lite
 ```
 
 ### configuration
-setup your foundry configuration, with specific `fs_permissions` and `bytecode_hash` settings,
+setup your foundry configuration, with specific `fs_permissions` setting,
 here is an example:
 
 `foundry.toml`
@@ -28,8 +28,6 @@ libs = ["lib"]
 fs_permissions = [
   {  access = "read-write", path = "./addresses.json"},
   {  access = "read-write", path = "./out"}]
-# to get deterministic deployed code
-bytecode_hash = "none"
 
 [rpc_endpoints]
 sepolia = "https://rpc.ankr.com/eth_sepolia"

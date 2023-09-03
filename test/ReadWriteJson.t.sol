@@ -28,11 +28,11 @@ contract ReadWriteJsonTest is Test {
     }
 
     function test_existsJsonFile() public {
-        assertTrue(rwJson.existsJsonFile());
-
         rwJson.setJsonFile("json.addresses");
         assertFalse(rwJson.existsJsonFile());
+    }
 
+    function test_existsJsonFileNot() public {
         rwJson.setJsonFile("addresses.json");
         assertTrue(rwJson.existsJsonFile());
     }
@@ -51,7 +51,9 @@ contract ReadWriteJsonTest is Test {
     function test_existsJsonNetwork() public {
         rwJson.setJsonFile("test/json/test_existsJsonNetwork.json");
         assertTrue(rwJson.existsJsonNetwork());
+    }
 
+    function test_existsJsonNetworkNot() public {
         rwJson.setJsonFile("test/json/test_existsJsonNetworkNot.json");
         assertFalse(rwJson.existsJsonNetwork());
     }

@@ -111,14 +111,17 @@ contract ReadWriteJson is Script, IReadWriteJson {
         }
     }
 
-    function existsJsonNetwork() public view returns (bool) {
+    function existsJsonNetwork() public returns (bool) {
         if (!existsJsonFile()) return false;
 
         string memory json = vm.readFile(jsonFile);
         string memory jsonKey = string.concat(".", vm.toString(block.chainid));
-        bytes memory res = vm.parseJson(json, jsonKey);
 
-        return !bytesEqual(res, "");
+        try vm.parseJsonKeys(json, jsonKey) returns (string[] memory) {
+            return true;
+        } catch {
+            return false;
+        }
     }
 
     function bytesEqual(bytes memory b1, bytes memory b2) internal pure returns (bool) {
