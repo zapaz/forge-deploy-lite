@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: MIT
-pragma solidity ^0.8.9;
+pragma solidity ^0.8.0;
 
 import "forge-std/Script.sol";
 import "script/ReadWriteJson.sol";
@@ -36,10 +36,18 @@ contract DeployLite is Script, ReadWriteJson {
         writeAddress(name, addr);
     }
 
+    function getDeployer() public view returns (address) {
+        try vm.envAddress("ETH_FROM") returns (address from) {
+            return from;
+        } catch {
+            return msg.sender;
+        }
+    }
+
     function deploy(string memory name) public returns (address) {
         if (!existsJsonFile()) createJsonFile();
 
-        deployer = msg.sender;
+        deployer = getDeployer();
 
         (bool deployed, address addr, bytes memory code) = isDeployed(name);
 
