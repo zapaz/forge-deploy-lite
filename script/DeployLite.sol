@@ -19,6 +19,10 @@ contract DeployLite is Script, ReadWriteJson {
         return this.sliceBytes(bytecode, 0, bytecode.length - getCborLength(bytecode));
     }
 
+    function isSameRunCode(bytes memory code1, bytes memory code2) public view returns (bool) {
+        return keccak256(removeDeployedCodeMetadata(code1)) == keccak256(removeDeployedCodeMetadata(code2));
+    }
+
     function isDeployed(string memory name)
         public
         view
@@ -28,8 +32,7 @@ contract DeployLite is Script, ReadWriteJson {
         bytes memory codeDeployed = addr.code;
         codeToDeploy = vm.getDeployedCode(string.concat(name, ".sol:", name));
 
-        deployed =
-            keccak256(removeDeployedCodeMetadata(codeToDeploy)) == keccak256(removeDeployedCodeMetadata(codeDeployed));
+        deployed = isSameRunCode(codeToDeploy, codeDeployed);
     }
 
     function saveDeployed(string memory name, address addr) public {
