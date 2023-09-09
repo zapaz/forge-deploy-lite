@@ -5,6 +5,9 @@ import "forge-std/Script.sol";
 import "script/ReadWriteJson.sol";
 
 contract DeployLite is Script, ReadWriteJson {
+    // script storage lost after each run!
+    mapping(address => bool) done;
+
     address deployer;
 
     function sliceBytes(bytes calldata data, uint256 start, uint256 end) public pure returns (bytes memory) {
@@ -39,6 +42,19 @@ contract DeployLite is Script, ReadWriteJson {
         writeAddress(name, addr);
     }
 
+    // get address if exists, creates a fake one otherwise
+    // to not get fake one, use directly readAddress that will return default address(0)
+    function getAddress(string memory name) public returns (address addr) {
+        addr = readAddress(name);
+        if (addr == address(0)) {
+            addr = makeAddr(name);
+            console.log(addr, "New EOA     ", name);
+        } else {
+            addr = msg.sender;
+            console.log(addr, "Existing    ", name);
+        }
+    }
+
     function getDeployer() public view returns (address) {
         try vm.envAddress("ETH_FROM") returns (address from) {
             return from;
@@ -54,13 +70,15 @@ contract DeployLite is Script, ReadWriteJson {
 
         (bool deployed, address addr, bytes memory code) = isDeployed(name);
 
+        if (done[addr]) return addr;
+
         if (deployed) {
-            console.log("%s already deployed at @%s (%s bytes)", name, addr, code.length);
+            console.log("%s Existing     %s (%s bytes)", addr, name, code.length);
         } else {
             if (addr.code.length > 0) {
-                console.log("%s previous deployement at @%s (%s bytes)", name, addr, addr.code.length);
+                console.log("%s Old deploy %s (%s bytes)", addr, name, addr.code.length);
             }
-            console.log("%s deploying... (%s bytes)", name, code.length);
+            console.log("%s Deploying... %s", addr, name);
 
             string memory deployFunction = string.concat("deploy", name, "()");
             (bool success, bytes memory result) = address(this).call(abi.encodeWithSignature(deployFunction));
@@ -69,7 +87,9 @@ contract DeployLite is Script, ReadWriteJson {
             (addr) = abi.decode(result, (address));
 
             saveDeployed(name, addr);
-            console.log("%s deployed to @%s (%s bytes)", name, addr, addr.code.length);
+            console.log("%s New deploy   %s (%s bytes)", addr, name, addr.code.length);
+
+            done[addr] = true;
         }
 
         return addr;
