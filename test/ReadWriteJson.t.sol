@@ -2,7 +2,7 @@
 pragma solidity ^0.8.0;
 
 import "forge-std/Test.sol";
-import "script/ReadWriteJson.sol";
+import "script/ReadWriteJson.s.sol";
 
 contract ReadWriteJsonTest is Test {
     using stdJson for string;

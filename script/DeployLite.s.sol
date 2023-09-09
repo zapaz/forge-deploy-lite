@@ -2,11 +2,11 @@
 pragma solidity ^0.8.0;
 
 import "forge-std/Script.sol";
-import "script/ReadWriteJson.sol";
+import "script/ReadWriteJson.s.sol";
 
 contract DeployLite is Script, ReadWriteJson {
-    // script storage lost after each run!
-    mapping(address => bool) done;
+    // save already resolved addresses in storage (script storage is ephemere)
+    mapping(string => address) addresses;
 
     address deployer;
 
@@ -45,6 +45,8 @@ contract DeployLite is Script, ReadWriteJson {
     // get address if exists, creates a fake one otherwise
     // to not get fake one, use directly readAddress that will return default address(0)
     function getAddress(string memory name) public returns (address addr) {
+        if ((addr = addresses[name]) != address(0)) return addr;
+
         addr = readAddress(name);
         if (addr == address(0)) {
             addr = makeAddr(name);
@@ -63,14 +65,16 @@ contract DeployLite is Script, ReadWriteJson {
         }
     }
 
-    function deploy(string memory name) public returns (address) {
+    function deploy(string memory name) public returns (address addr) {
+        if ((addr = addresses[name]) != address(0)) return addr;
+
         if (!existsJsonFile()) createJsonFile();
 
         deployer = getDeployer();
 
-        (bool deployed, address addr, bytes memory code) = isDeployed(name);
-
-        if (done[addr]) return addr;
+        bool deployed;
+        bytes memory code;
+        (deployed, addr, code) = isDeployed(name);
 
         if (deployed) {
             console.log("%s Existing     %s (%s bytes)", addr, name, code.length);
@@ -88,10 +92,8 @@ contract DeployLite is Script, ReadWriteJson {
 
             saveDeployed(name, addr);
             console.log("%s New deploy   %s (%s bytes)", addr, name, addr.code.length);
-
-            done[addr] = true;
         }
 
-        return addr;
+        addresses[name] = addr;
     }
 }

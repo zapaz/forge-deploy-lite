@@ -1,12 +1,13 @@
 # forge-deploy-lite
 
-DeployLite is a forge script to help contract deployments on mutliple evm networks
+DeployLite is a forge script to ease contract deployments on mutliple evm networks
 
 DeployLite registers deployed addresses in a single json file, to be used by your frontend UI
 
 ## setup
 
 ### install
+
 install `forge-deploy-lite` into your foundry project with:
 
 ```sh
@@ -14,10 +15,12 @@ forge install zapaz/forge-deploy-lite
 ```
 
 ### configuration
+
 setup your foundry configuration, with specific `fs_permissions` setting,
 here is an example:
 
 `foundry.toml`
+
 ```toml
 [profile.default]
 src = "src"
@@ -33,17 +36,17 @@ fs_permissions = [
 sepolia = "https://rpc.ankr.com/eth_sepolia"
 ```
 
-
 #### script
 
 The `Counter` deploy script is as follow, to be writen in a file `DeployCounter.s.sol` :
 
 `script/DeployCounter.s.sol`
+
 ```solidity
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.0;
 
-import {DeployLite} from "lib/forge-deploy-lite/script/DeployLite.sol";
+import {DeployLite} from "lib/forge-deploy-lite/script/DeployLite.s.sol";
 import {Counter} from "src/Counter.sol";
 
 contract DeployCounter is DeployLite {
@@ -127,6 +130,7 @@ cat addresses.json
 here is a example of the resulting file:
 
 `addresses.json`
+
 ```json
 {
   "31337": {
@@ -141,6 +145,7 @@ here is a example of the resulting file:
 ```
 
 ## todo
+- document howto to also include deploy in tests
 - support immutable variables
 - manage deployment failure... i.e. not writing addresses in this case
 - manage zkSync Era specific deployment

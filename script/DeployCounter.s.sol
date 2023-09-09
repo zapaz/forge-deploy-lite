@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.0;
 
-import {DeployLite} from "script/DeployLite.sol";
+import {DeployLite} from "script/DeployLite.s.sol";
 import {Counter} from "src/Counter.sol";
 
 contract DeployCounter is DeployLite {

@@ -3,7 +3,7 @@ pragma solidity ^0.8.0;
 
 import {Test, console} from "forge-std/Test.sol";
 import {HowMany} from "src/HowMany.sol";
-import {DeployLite} from "script/DeployLite.sol";
+import {DeployLite} from "script/DeployLite.s.sol";
 
 contract BytecodeTest is Test, DeployLite {
     address counter;
