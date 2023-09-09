@@ -7,6 +7,7 @@ import "script/ReadWriteJson.s.sol";
 contract DeployLite is Script, ReadWriteJson {
     // save already resolved addresses in storage (script storage is ephemere)
     mapping(string => address) addresses;
+    string[] names;
 
     address deployer;
 
@@ -38,8 +39,14 @@ contract DeployLite is Script, ReadWriteJson {
         deployed = isSameRunCode(codeToDeploy, codeDeployed);
     }
 
-    function saveDeployed(string memory name, address addr) public {
-        writeAddress(name, addr);
+    function saveDeployed(string memory name) public {
+        writeAddress(name, addresses[name]);
+    }
+
+    function saveAllDeployed() public {
+        for (uint256 index; index < names.length; index++) {
+            saveDeployed(names[index]);
+        }
     }
 
     // get address if exists, creates a fake one otherwise
@@ -65,6 +72,25 @@ contract DeployLite is Script, ReadWriteJson {
         }
     }
 
+    function uintPad5(uint256 n) public pure returns (string memory) {
+        require(n <= 24_576, "Too big");
+        bytes memory b = new bytes(6);
+        b[0] = bytes1(n < 10_000 ? 0x20 : uint8(n / 10_000 % 10) + 0x30);
+        b[1] = bytes1(n < 1_000 ? 0x20 : uint8(n / 1_000 % 10) + 0x30);
+        b[2] = bytes1(n < 100 ? 0x20 : uint8(n / 100 % 10) + 0x30);
+        b[3] = bytes1(n < 10 ? 0x20 : uint8(n / 10 % 10) + 0x30);
+        b[4] = bytes1(n < 1 ? 0x20 : uint8(n % 10) + 0x30);
+        return string(b);
+    }
+
+    function stringPad20(string memory input) public pure returns (string memory output) {
+        bytes memory str = bytes(input);
+        while (str.length < 20) {
+            str = abi.encodePacked(str, " ");
+        }
+        output = string(str);
+    }
+
     function deploy(string memory name) public returns (address addr) {
         if ((addr = addresses[name]) != address(0)) return addr;
 
@@ -77,10 +103,10 @@ contract DeployLite is Script, ReadWriteJson {
         (deployed, addr, code) = isDeployed(name);
 
         if (deployed) {
-            console.log("%s Existing     %s (%s bytes)", addr, name, code.length);
+            console.log("%s Existing     %s (%s bytes)", addr, stringPad20(name), uintPad5(code.length));
         } else {
             if (addr.code.length > 0) {
-                console.log("%s Old deploy %s (%s bytes)", addr, name, addr.code.length);
+                console.log("%s Old deploy   %s %s bytes", addr, stringPad20(name), uintPad5(addr.code.length));
             }
             console.log("%s Deploying... %s", addr, name);
 
@@ -90,10 +116,10 @@ contract DeployLite is Script, ReadWriteJson {
             require(success, "deploy call failed");
             (addr) = abi.decode(result, (address));
 
-            saveDeployed(name, addr);
-            console.log("%s New deploy   %s (%s bytes)", addr, name, addr.code.length);
+            console.log("%s New deploy   %s (%s bytes)", addr, stringPad20(name), uintPad5(addr.code.length));
         }
 
+        names.push(name);
         addresses[name] = addr;
     }
 }
