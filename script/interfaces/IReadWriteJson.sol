@@ -5,4 +5,7 @@ interface IReadWriteJson {
     function setJsonFile(string calldata filePath) external;
     function readAddress(string calldata name) external returns (address);
     function writeAddress(string calldata name, address addr) external;
+
+    function writeAddressToCache(string calldata name, address) external;
+    function writeAddresses() external;
 }

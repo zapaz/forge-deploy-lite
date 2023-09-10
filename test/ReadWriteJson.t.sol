@@ -4,108 +4,105 @@ pragma solidity ^0.8.0;
 import "forge-std/Test.sol";
 import "script/ReadWriteJson.s.sol";
 
-contract ReadWriteJsonTest is Test {
+contract ReadWriteJsonTest is Test, ReadWriteJson {
     using stdJson for string;
 
-    ReadWriteJson rwJson;
     string testFile;
 
     function setUpJson(string memory name) public {
         testFile = string.concat("test/json/", name, ".json");
-        rwJson.setJsonFile(testFile);
+        setJsonFile(testFile);
 
         try vm.removeFile(testFile) {} catch (bytes memory) {}
         vm.writeLine(testFile, string.concat('{\n  "', vm.toString(block.chainid), '": {\n    "Test": ""\n  }\n}'));
         vm.closeFile(testFile);
     }
 
-    function setUp() public {
-        rwJson = new ReadWriteJson();
-    }
+    function setUp() public {}
 
     function test_OK() public pure {
         assert(true);
     }
 
     function test_existsJsonFile() public {
-        rwJson.setJsonFile("json.addresses");
-        assertFalse(rwJson.existsJsonFile());
+        setJsonFile("addresses.json");
+        assertTrue(_existsJsonFile());
     }
 
     function test_existsJsonFileNot() public {
-        rwJson.setJsonFile("addresses.json");
-        assertTrue(rwJson.existsJsonFile());
+        setJsonFile("json.addresses");
+        assertFalse(_existsJsonFile());
     }
 
     function test_createsJsonFile() public {
         string memory jsonFile = "test/json/test_createsJsonFile.json";
-        rwJson.setJsonFile(jsonFile);
+        setJsonFile(jsonFile);
 
-        if (rwJson.existsJsonFile()) vm.removeFile(jsonFile);
-        assertFalse(rwJson.existsJsonFile());
+        if (_existsJsonFile()) vm.removeFile(jsonFile);
+        assertFalse(_existsJsonFile());
 
-        rwJson.createJsonFile();
-        assertTrue(rwJson.existsJsonFile());
+        _createJsonFile(block.chainid);
+        assertTrue(_existsJsonFile());
     }
 
     function test_existsJsonNetwork() public {
-        rwJson.setJsonFile("test/json/test_existsJsonNetwork.json");
-        assertTrue(rwJson.existsJsonNetwork());
+        setJsonFile("test/json/test_existsJsonNetwork.json");
+        assertTrue(_existsJsonNetwork(block.chainid));
     }
 
     function test_existsJsonNetworkNot() public {
-        rwJson.setJsonFile("test/json/test_existsJsonNetworkNot.json");
-        assertFalse(rwJson.existsJsonNetwork());
+        setJsonFile("test/json/test_existsJsonNetworkNot.json");
+        assertFalse(_existsJsonNetwork(block.chainid));
     }
 
     function test_createsJsonNetwork() public {
         string memory jsonFile = "test/json/test_createsJsonNetwork.json";
-        rwJson.setJsonFile(jsonFile);
+        setJsonFile(jsonFile);
 
-        if (!rwJson.existsJsonNetwork()) {
-            rwJson.createJsonNetwork();
-            assertTrue(rwJson.existsJsonNetwork());
+        if (!_existsJsonNetwork(block.chainid)) {
+            _createJsonNetwork(block.chainid);
+            assertTrue(_existsJsonNetwork(block.chainid));
         }
     }
 
     function test_setUpJson() public {
         setUpJson("test_setUpJson");
 
-        assertEq(rwJson.jsonFile(), testFile);
-        assertEq(rwJson.readAddress("Test"), address(0x20));
+        assertEq(jsonFile, testFile);
+        assertEq(readAddress("Test"), address(0x20));
     }
 
     function test_SetFilePath() public {
         string memory otherFile = "../other/other.json";
 
-        rwJson.setJsonFile(otherFile);
-        assertEq(rwJson.jsonFile(), otherFile);
+        setJsonFile(otherFile);
+        assertEq(jsonFile, otherFile);
     }
 
     function test_writeAddressExists() public {
         setUpJson("test_writeAddressExists");
 
-        rwJson.writeAddress("Test", address(this));
-        assertEq(rwJson.readAddress("Test"), address(this));
+        writeAddress("Test", address(this));
+        assertEq(readAddress("Test"), address(this));
     }
 
     function test_writeAddressNotExists() public {
         setUpJson("test_writeAddressNotExists");
 
-        rwJson.writeAddress("NoTestHere", address(this));
-        assertEq(rwJson.readAddress("NoTestHere"), address(this));
+        writeAddress("NoTestHere", address(this));
+        assertEq(readAddress("NoTestHere"), address(this));
     }
 
     function test_readAddressExists() public {
         setUpJson("test_readAddressExists");
 
-        rwJson.writeAddress("Test", address(this));
-        assertEq(rwJson.readAddress("Test"), address(this));
+        writeAddress("Test", address(this));
+        assertEq(readAddress("Test"), address(this));
     }
 
     function test_readAddressNotExists() public {
         setUpJson("test_readAddressNotExists");
 
-        assertEq(rwJson.readAddress("NoTestHere"), address(0));
+        assertEq(readAddress("NoTestHere"), address(0));
     }
 }
