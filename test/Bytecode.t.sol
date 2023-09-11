@@ -28,7 +28,7 @@ contract BytecodeTest is Test, DeployLite {
     function test_bytecode_cbor_length() public view {
         bytes memory code = vm.getDeployedCode("HowMany.sol:HowMany");
 
-        uint256 cborLength = getCborLength(code);
+        uint256 cborLength = _getCborLength(code);
         console.log("cborLength:", cborLength);
 
         assert(cborLength == 51);
@@ -43,9 +43,9 @@ contract BytecodeTest is Test, DeployLite {
     }
 
     function test_bytecodes_without_metadata_equals() public view {
-        bytes memory bytecodeWithoutMetadata = removeDeployedCodeMetadata(vm.getDeployedCode("HowMany.sol:HowMany"));
+        bytes memory bytecodeWithoutMetadata = _removeDeployedCodeMetadata(vm.getDeployedCode("HowMany.sol:HowMany"));
         bytes memory bytecodeBisWithoutMetadata =
-            removeDeployedCodeMetadata(vm.getDeployedCode("HowManyBis.sol:HowMany"));
+            _removeDeployedCodeMetadata(vm.getDeployedCode("HowManyBis.sol:HowMany"));
 
         assert(keccak256(bytecodeWithoutMetadata) == keccak256(bytecodeBisWithoutMetadata));
     }
