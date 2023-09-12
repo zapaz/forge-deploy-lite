@@ -9,6 +9,36 @@ import {IUtils} from "./interfaces/IUtils.sol";
 contract DeployLite is Script, IDeployLite, IUtils, ReadWriteJson {
     address deployer;
 
+    function deploy(string memory name, bool update) public override(IDeployLite) returns (address addr) {
+        if (!_existsJsonFile()) _createJsonFile(block.chainid);
+
+        if (deployer == address(0)) deployer = msg.sender;
+
+        addr = readAddress(name);
+        uint256 codeDeployedLength = getCodeDeployed(name).length;
+
+        if (isSameDeployed(name)) {
+            log4(addr, _stringPad20(name), "Already deployed", _bytesPad5(codeDeployedLength));
+        } else {
+            if (isDeployed(name)) {
+                log4(addr, _stringPad20(name), "Older deployment", _bytesPad5(codeDeployedLength));
+
+                if (!update) return addr;
+            }
+            log4(address(0), name, "Deploying...", "");
+
+            string memory deployFunction = string.concat("deploy", name, "()");
+            (bool success, bytes memory result) = address(this).call(abi.encodeWithSignature(deployFunction));
+
+            require(success, "deploy call failed");
+            (addr) = abi.decode(result, (address));
+
+            writeAddressToCache(name, addr);
+
+            log4(addr, _stringPad20(name), "New deployment", _bytesPad5(addr.code.length));
+        }
+    }
+
     function log3(address addr, string memory name, string memory description) public view override(IUtils) {
         log4(addr, name, description, "");
     }
@@ -36,36 +66,6 @@ contract DeployLite is Script, IDeployLite, IUtils, ReadWriteJson {
         } else {
             log4(txOrigin, label, "txOrigin", mode);
             log4(msgSender, label, "msgSender", mode);
-        }
-    }
-
-    function deploy(string memory name, bool update) public override(IDeployLite) returns (address addr) {
-        if (!_existsJsonFile()) _createJsonFile(block.chainid);
-
-        if (deployer == address(0)) deployer = msg.sender;
-
-        addr = readAddress(name);
-        uint256 codeDeployedLength = getCodeDeployed(name).length;
-
-        if (isSameDeployed(name)) {
-            log4(addr, _stringPad20(name), "Already deployed", _bytesPad5(codeDeployedLength));
-        } else {
-            if (isDeployed(name)) {
-                log4(addr, _stringPad20(name), "Older deployment", _bytesPad5(codeDeployedLength));
-
-                if (!update) return addr;
-            }
-            log4(addr, name, "Deploying...", "");
-
-            string memory deployFunction = string.concat("deploy", name, "()");
-            (bool success, bytes memory result) = address(this).call(abi.encodeWithSignature(deployFunction));
-
-            require(success, "deploy call failed");
-            (addr) = abi.decode(result, (address));
-
-            writeAddressToCache(name, addr);
-
-            log4(addr, _stringPad20(name), "New deployment", _bytesPad5(addr.code.length));
         }
     }
 
