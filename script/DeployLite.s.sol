@@ -150,6 +150,7 @@ contract DeployLite is Script, IDeployLite, IUtils, ReadWriteJson {
     }
 
     function _removeDeployedCodeMetadata(bytes memory bytecode) internal view returns (bytes memory) {
-        return this.sliceBytes(bytecode, 0, bytecode.length - _getCborLength(bytecode));
+        uint256 len = _getCborLength(bytecode);
+        return (bytecode.length >= len) ? this.sliceBytes(bytecode, 0, bytecode.length - len) : bytecode;
     }
 }
