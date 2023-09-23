@@ -33,7 +33,7 @@ contract DeployLite is Script, IDeployLite, IUtils, ReadWriteJson {
             require(success, "deploy call failed");
             (addr) = abi.decode(result, (address));
 
-            writeAddressToCache(name, addr);
+            writeAddress(name, addr);
 
             log4(addr, _stringPad20(name), "New deployment", _bytesPad5(addr.code.length));
         }
@@ -74,7 +74,7 @@ contract DeployLite is Script, IDeployLite, IUtils, ReadWriteJson {
 
         if (addr == address(0)) {
             addr = makeAddr(name);
-            writeAddressToCache(name, addr);
+            writeAddress(name, addr);
             log4(addr, name, "New EOA", "");
         } else {
             log4(addr, name, "Existing", "");

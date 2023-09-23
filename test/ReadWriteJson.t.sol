@@ -29,8 +29,8 @@ contract ReadWriteJsonTest is Test, ReadWriteJson {
         assertTrue(_existsJsonFile());
     }
 
-    function test_existsJsonFileNot() public {
-        setJsonFile("json.addresses");
+    function test_existsNotJsonFile() public {
+        setJsonFile("test/json/json.addresses");
         assertFalse(_existsJsonFile());
     }
 

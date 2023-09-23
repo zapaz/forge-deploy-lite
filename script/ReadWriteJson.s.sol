@@ -40,11 +40,6 @@ contract ReadWriteJson is Script, IReadWriteJson {
         }
     }
 
-    function writeAddressToCache(string memory name, address addr) public override(IReadWriteJson) {
-        names.push(name);
-        addresses[block.chainid][name] = addr;
-    }
-
     function writeAddress(string memory name, address addr) public override(IReadWriteJson) {
         require(bytes(name).length != 0, "No name");
 
@@ -54,7 +49,7 @@ contract ReadWriteJson is Script, IReadWriteJson {
         _writeAddress(block.chainid, name, addr);
     }
 
-    function writeAddresses() public override(IReadWriteJson) {
+    function _writeAddresses() internal {
         for (uint256 index; index < names.length; index++) {
             string memory name = names[index];
             _writeAddress(block.chainid, name, addresses[block.chainid][name]);
@@ -68,6 +63,13 @@ contract ReadWriteJson is Script, IReadWriteJson {
         if (addr != _readAddress(chainId, name)) {
             _createJsonAddress(chainId, name, addr);
         }
+
+        _writeAddressToCache(name, addr);
+    }
+
+    function _writeAddressToCache(string memory name, address addr) internal {
+        names.push(name);
+        addresses[block.chainid][name] = addr;
     }
 
     function _readAddress(uint256 chainId, string memory name) internal view returns (address addr) {
