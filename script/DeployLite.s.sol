@@ -2,9 +2,9 @@
 pragma solidity ^0.8.0;
 
 import "forge-std/Script.sol";
-import "./ReadWriteJson.s.sol";
-import {IDeployLite} from "./interfaces/IDeployLite.sol";
-import {IUtils} from "./interfaces/IUtils.sol";
+import "../script/ReadWriteJson.s.sol";
+import {IDeployLite} from "../script/interfaces/IDeployLite.sol";
+import {IUtils} from "../script/interfaces/IUtils.sol";
 
 contract DeployLite is Script, IDeployLite, IUtils, ReadWriteJson {
     address deployer;

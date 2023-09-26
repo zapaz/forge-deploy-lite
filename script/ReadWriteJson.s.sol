@@ -2,8 +2,8 @@
 pragma solidity ^0.8.0;
 
 import "forge-std/Script.sol";
-import {LibString} from "script/lib/LibString.sol";
-import {IReadWriteJson} from "script/interfaces/IReadWriteJson.sol";
+import {LibString} from "../script/lib/LibString.sol";
+import {IReadWriteJson} from "../script/interfaces/IReadWriteJson.sol";
 
 // Read and Write json file of this format
 // {
