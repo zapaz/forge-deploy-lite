@@ -89,7 +89,7 @@ contract DeployLite is Script, IDeployLite, IUtils, ReadWriteJson {
         return keccak256(_removeDeployedCodeMetadata(code1)) == keccak256(_removeDeployedCodeMetadata(code2));
     }
 
-    function getCodeDeployed(string memory name) public override(IDeployLite) returns (bytes memory) {
+    function getCodeDeployed(string memory name) public view override(IDeployLite) returns (bytes memory) {
         return readAddress(name).code;
     }
 
@@ -97,11 +97,11 @@ contract DeployLite is Script, IDeployLite, IUtils, ReadWriteJson {
         return vm.getDeployedCode(string.concat(name, ".sol:", name));
     }
 
-    function isDeployed(string memory name) public override(IDeployLite) returns (bool) {
+    function isDeployed(string memory name) public view override(IDeployLite) returns (bool) {
         return getCodeDeployed(name).length > 0;
     }
 
-    function isSameDeployed(string memory name) public override(IDeployLite) returns (bool) {
+    function isSameDeployed(string memory name) public view override(IDeployLite) returns (bool) {
         return isSameRunCode(getCodeToDeploy(name), getCodeDeployed(name));
     }
 

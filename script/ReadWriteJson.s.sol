@@ -31,7 +31,7 @@ contract ReadWriteJson is Script, IReadWriteJson {
         jsonFile = jsonFile_;
     }
 
-    function readAddress(string memory name) public override(IReadWriteJson) returns (address addr) {
+    function readAddress(string memory name) public view override(IReadWriteJson) returns (address addr) {
         require(bytes(name).length != 0, "No name");
         if ((addr = addresses[block.chainid][name]) != address(0)) return addr;
 
@@ -128,7 +128,7 @@ contract ReadWriteJson is Script, IReadWriteJson {
         }
     }
 
-    function _existsJsonNetwork(uint256 chainId) internal returns (bool) {
+    function _existsJsonNetwork(uint256 chainId) internal view returns (bool) {
         if (!_existsJsonFile()) return false;
 
         string memory json = vm.readFile(jsonFile);
@@ -141,7 +141,7 @@ contract ReadWriteJson is Script, IReadWriteJson {
         }
     }
 
-    function _readJsonNetwork(uint256 chainId) internal returns (string[] memory chainNames) {
+    function _readJsonNetwork(uint256 chainId) internal view returns (string[] memory chainNames) {
         if (_existsJsonFile()) {
             string memory json = vm.readFile(jsonFile);
             string memory jsonKey = string.concat(".", vm.toString(chainId));
