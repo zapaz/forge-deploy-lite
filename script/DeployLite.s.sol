@@ -10,8 +10,6 @@ contract DeployLite is Script, IDeployLite, IUtils, ReadWriteJson {
     address deployer;
 
     function deploy(string memory name, bool update) public override(IDeployLite) returns (address addr) {
-        if (!_existsJsonFile()) _createJsonFile(block.chainid);
-
         if (deployer == address(0)) deployer = msg.sender;
 
         addr = readAddress(name);
