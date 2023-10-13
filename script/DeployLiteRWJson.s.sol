@@ -1,9 +1,9 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.0;
 
-import "forge-std/Script.sol";
+import {Script, VmSafe, console} from "forge-std/Script.sol";
 import {LibString} from "../script/lib/LibString.sol";
-import {IReadWriteJson} from "../script/interfaces/IReadWriteJson.sol";
+import {IDeployLiteRWJson} from "../script/interfaces/IDeployLiteRWJson.sol";
 
 // Read and Write json file of this format
 // {
@@ -16,17 +16,27 @@ import {IReadWriteJson} from "../script/interfaces/IReadWriteJson.sol";
 //     "Counter": "0x34A1D3fff3958843C43aD80F30b94c510645C316"
 //   }
 // }
-contract ReadWriteJson is Script, IReadWriteJson {
+contract DeployLiteRWJson is Script, IDeployLiteRWJson {
     using LibString for string;
 
-    string internal jsonFile = "addresses.json";
+    mapping(string => address) internal _addresses;
+
+    string internal _jsonFile = "addresses.json";
+
+    bool internal _recording = true;
 
     function setJsonFile(string memory jsonFile_) public {
-        jsonFile = jsonFile_;
+        _jsonFile = jsonFile_;
     }
 
-    function readAddress(string memory name) public view returns (address) {
+    function setRecording(bool recording_) public {
+        _recording = recording_;
+    }
+
+    function readAddress(string memory name) public view returns (address addr) {
         require(bytes(name).length != 0, "No name");
+
+        if ((addr = _addresses[name]) != address(0)) return addr;
 
         string memory json = _readJsonFile();
         string memory nameKey = string.concat(".", vm.toString(block.chainid), ".", name);
@@ -35,8 +45,6 @@ contract ReadWriteJson is Script, IReadWriteJson {
             bytes memory jsonBytes = vm.parseJson(json, nameKey);
             return abi.decode(jsonBytes, (address));
         }
-
-        return address(0);
     }
 
     function readString(string memory name) public view returns (string memory) {
@@ -57,18 +65,22 @@ contract ReadWriteJson is Script, IReadWriteJson {
     function writeAddress(string memory name, address addr) public {
         require(bytes(name).length != 0, "No name");
 
+        _addresses[name] = addr;
+
+        // write address to file only when recording
+        if (!(_recording)) return;
+
         string memory networkKey = string.concat(".", vm.toString(block.chainid));
         string memory nameKey = string.concat(networkKey, ".", name);
 
         string memory jsonFromFile = _readJsonFile();
         string memory jsonNetwork;
-        string memory jsonName;
 
         vm.serializeJson("root", jsonFromFile);
 
         if (vm.keyExists(jsonFromFile, networkKey)) {
             if (vm.keyExists(jsonFromFile, nameKey)) {
-                vm.writeJson(vm.toString(addr), jsonFile, nameKey);
+                vm.writeJson(vm.toString(addr), _jsonFile, nameKey);
             } else {
                 string[] memory keys = vm.parseJsonKeys(jsonFromFile, networkKey);
 
@@ -84,18 +96,18 @@ contract ReadWriteJson is Script, IReadWriteJson {
                     }
                 }
                 jsonNetwork = vm.serializeAddress("network", name, addr);
-                vm.writeJson(jsonNetwork, jsonFile, networkKey);
+                vm.writeJson(jsonNetwork, _jsonFile, networkKey);
             }
         } else {
             vm.serializeString("network", "chainName", "");
             jsonNetwork = vm.serializeAddress("network", name, addr);
             string memory json = vm.serializeString("root", vm.toString(block.chainid), jsonNetwork);
-            vm.writeJson(json, jsonFile);
+            vm.writeJson(json, _jsonFile);
         }
     }
 
     function _readJsonFile() internal view returns (string memory) {
-        try vm.readFile(jsonFile) returns (string memory jsonFromFile) {
+        try vm.readFile(_jsonFile) returns (string memory jsonFromFile) {
             return jsonFromFile;
         } catch {
             return "{}";

@@ -2,9 +2,9 @@
 pragma solidity ^0.8.0;
 
 import "forge-std/Test.sol";
-import "../script/ReadWriteJson.s.sol";
+import "../script/DeployLiteRWJson.s.sol";
 
-contract ReadWriteJsonTest is Test, ReadWriteJson {
+contract ReadWriteJsonTest is Test, DeployLiteRWJson {
     using stdJson for string;
 
     string testFile;
@@ -17,36 +17,36 @@ contract ReadWriteJsonTest is Test, ReadWriteJson {
         string memory otherFile = "otherFile.json";
 
         setJsonFile(otherFile);
-        assertEq(jsonFile, otherFile);
+        assertEq(_jsonFile, otherFile);
     }
 
     function test_ReadWriteJson_readAddressExists() public {
         setJsonFile("out/test_ReadWriteJson_readAddressExists.json");
         vm.writeJson(
-            string.concat('{"', vm.toString(block.chainid), '":{"Test":"', vm.toString(address(this)), '"}}'), jsonFile
+            string.concat('{"', vm.toString(block.chainid), '":{"Test":"', vm.toString(address(this)), '"}}'), _jsonFile
         );
 
         assertEq(readAddress("Test"), address(this));
 
-        vm.removeFile(jsonFile);
+        vm.removeFile(_jsonFile);
     }
 
     function test_ReadWriteJson_readAddressNotExists() public {
         setJsonFile("out/test_ReadWriteJson_readAddressNotExists.json");
-        vm.writeJson(string.concat('{"', vm.toString(block.chainid), '":{"chainName":"local"}}'), jsonFile);
+        vm.writeJson(string.concat('{"', vm.toString(block.chainid), '":{"chainName":"local"}}'), _jsonFile);
 
         assertEq(readAddress("NoTestHere"), address(0));
 
-        vm.removeFile(jsonFile);
+        vm.removeFile(_jsonFile);
     }
 
     function test_ReadWriteJson_readAddressNetworkNotExists() public {
         setJsonFile("out/test_ReadWriteJson_readAddressNetworkNotExists.json");
-        vm.writeJson(string.concat('{"42":{"Test":"', vm.toString(address(this)), '"}}'), jsonFile);
+        vm.writeJson(string.concat('{"42":{"Test":"', vm.toString(address(this)), '"}}'), _jsonFile);
 
         assertEq(readAddress("Test"), address(0));
 
-        vm.removeFile(jsonFile);
+        vm.removeFile(_jsonFile);
     }
 
     function test_ReadWriteJson_readAddressJsonNotExists() public {
@@ -59,46 +59,46 @@ contract ReadWriteJsonTest is Test, ReadWriteJson {
     function test_ReadWriteJson_writeAddressExists() public {
         setJsonFile("out/test_ReadWriteJson_writeAddressExists.json");
         vm.writeJson(
-            string.concat('{"', vm.toString(block.chainid), '":{"Test":"', vm.toString(address(this)), '"}}'), jsonFile
+            string.concat('{"', vm.toString(block.chainid), '":{"Test":"', vm.toString(address(this)), '"}}'), _jsonFile
         );
 
         writeAddress("Test", address(42));
         assertEq(readAddress("Test"), address(42));
 
-        vm.removeFile(jsonFile);
+        vm.removeFile(_jsonFile);
     }
 
     function test_ReadWriteJson_writeAddressNotExists() public {
         setJsonFile("out/test_ReadWriteJson_writeAddressNotExists.json");
         vm.writeJson(
-            string.concat('{"', vm.toString(block.chainid), '":{"Test":"', vm.toString(address(this)), '"}}'), jsonFile
+            string.concat('{"', vm.toString(block.chainid), '":{"Test":"', vm.toString(address(this)), '"}}'), _jsonFile
         );
 
         writeAddress("NoTestHere", address(42));
         assertEq(readAddress("NoTestHere"), address(42));
 
-        vm.removeFile(jsonFile);
+        vm.removeFile(_jsonFile);
     }
 
     function test_ReadWriteJson_writeAddressNetworkNotExists() public {
         setJsonFile("out/test_ReadWriteJson_writeAddressNetworkNotExists.json");
-        vm.writeJson(string.concat('{"42":{"Test":"', vm.toString(address(this)), '"}}'), jsonFile);
+        vm.writeJson(string.concat('{"42":{"Test":"', vm.toString(address(this)), '"}}'), _jsonFile);
 
         writeAddress("Test", address(42));
 
         assertEq(readAddress("Test"), address(42));
 
-        vm.removeFile(jsonFile);
+        vm.removeFile(_jsonFile);
     }
 
     function test_ReadWriteJson_writeAddressJsonNotExists() public {
-        string memory jsonFile = "out/test_ReadWriteJson_writeAddressJsonNotExists.json";
-        setJsonFile(jsonFile);
+        string memory _jsonFile = "out/test_ReadWriteJson_writeAddressJsonNotExists.json";
+        setJsonFile(_jsonFile);
 
         writeAddress("Test", address(42));
 
         assertEq(readAddress("Test"), address(42));
 
-        vm.removeFile(jsonFile);
+        vm.removeFile(_jsonFile);
     }
 }
