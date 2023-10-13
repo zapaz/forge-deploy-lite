@@ -16,6 +16,12 @@ contract BytecodeTest is Test, DeployLite {
         assert(true);
     }
 
+    function test_bytecode_Square() public view {
+        bytes memory code = vm.getCode("Square.sol:Square");
+        // bytes memory code = vm.getDeployedCode("Square.sol:Square");
+        assert(true);
+    }
+
     function test_bytecode_to_deploy() public view {
         bytes memory code = vm.getDeployedCode("HowMany.sol:HowMany");
 
