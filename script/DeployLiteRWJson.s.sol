@@ -1,9 +1,8 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.0;
 
-import {Script, VmSafe, console} from "forge-std/Script.sol";
-import {LibString} from "../script/lib/LibString.sol";
-import {IDeployLiteRWJson} from "../script/interfaces/IDeployLiteRWJson.sol";
+import {IDeployLiteRWJson} from "./interfaces/IDeployLiteRWJson.sol";
+import {DeployLiteUtils} from "./DeployLiteUtils.s.sol";
 
 // Read and Write json file of this format
 // {
@@ -16,9 +15,7 @@ import {IDeployLiteRWJson} from "../script/interfaces/IDeployLiteRWJson.sol";
 //     "Counter": "0x34A1D3fff3958843C43aD80F30b94c510645C316"
 //   }
 // }
-contract DeployLiteRWJson is Script, IDeployLiteRWJson {
-    using LibString for string;
-
+contract DeployLiteRWJson is IDeployLiteRWJson, DeployLiteUtils {
     mapping(string => address) internal _addresses;
 
     string internal _jsonFile = "addresses.json";
@@ -48,7 +45,6 @@ contract DeployLiteRWJson is Script, IDeployLiteRWJson {
     }
 
     function readString(string memory name) public view returns (string memory) {
-        console.log("readString", name);
         require(bytes(name).length != 0, "No name");
 
         string memory json = _readJsonFile();
@@ -112,13 +108,5 @@ contract DeployLiteRWJson is Script, IDeployLiteRWJson {
         } catch {
             return "{}";
         }
-    }
-
-    function _bytesEqual(bytes memory b1, bytes memory b2) internal pure returns (bool) {
-        return keccak256(b1) == keccak256(b2);
-    }
-
-    function _stringEqual(string memory s1, string memory s2) internal pure returns (bool) {
-        return _bytesEqual(bytes(s1), bytes(s2));
     }
 }

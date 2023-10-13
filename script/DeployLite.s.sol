@@ -2,11 +2,11 @@
 pragma solidity ^0.8.0;
 
 import {Script} from "forge-std/Script.sol";
+
 import {IDeployLite} from "./interfaces/IDeployLite.sol";
 import {DeployLiteRWJson} from "./DeployLiteRWJson.s.sol";
-import {DeployLiteUtils} from "./DeployLiteUtils.s.sol";
 
-contract DeployLite is Script, IDeployLite, DeployLiteRWJson, DeployLiteUtils {
+contract DeployLite is Script, IDeployLite, DeployLiteRWJson {
     address deployer;
 
     function deploy(string memory name) public override(IDeployLite) returns (address) {

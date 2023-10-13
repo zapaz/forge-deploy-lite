@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.0;
 
-import {Script, VmSafe, console} from "forge-std/Script.sol";
+import "forge-std/Script.sol";
 import {IDeployLiteUtils} from "./interfaces/IDeployLiteUtils.sol";
 
 contract DeployLiteUtils is IDeployLiteUtils, Script {
@@ -65,5 +65,13 @@ contract DeployLiteUtils is IDeployLiteUtils, Script {
         require(callerMode < 5, "Unknown mode");
         string[5] memory modes = ["None", "Broadcast", "RecurrentBroadcast", "Prank", "RecurrentPrank"];
         return modes[callerMode];
+    }
+
+    function _bytesEqual(bytes memory b1, bytes memory b2) internal pure returns (bool) {
+        return keccak256(b1) == keccak256(b2);
+    }
+
+    function _stringEqual(string memory s1, string memory s2) internal pure returns (bool) {
+        return _bytesEqual(bytes(s1), bytes(s2));
     }
 }
