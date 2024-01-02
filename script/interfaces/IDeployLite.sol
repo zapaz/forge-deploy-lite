@@ -8,6 +8,7 @@ interface IDeployLite {
 
     function isDeployed(string memory name) external view returns (bool);
     function isSameDeployed(string memory name) external view returns (bool);
+    function isSameDeployed(string memory nameToDeploy, address addressDeployed) external view returns (bool);
     function isSameRunCode(bytes memory code1, bytes memory code2) external view returns (bool);
 
     function setDeployer(address deployer) external;

@@ -6,6 +6,8 @@ import {Script} from "forge-std/Script.sol";
 import {IDeployLite} from "./interfaces/IDeployLite.sol";
 import {DeployLiteRWJson} from "./DeployLiteRWJson.s.sol";
 
+// import {console} from "forge-std/console.sol";
+
 contract DeployLite is Script, IDeployLite, DeployLiteRWJson {
     address deployer;
 
@@ -13,32 +15,45 @@ contract DeployLite is Script, IDeployLite, DeployLiteRWJson {
         return deploy(name, true);
     }
 
-    function deploy(string memory name, bool forceUpdate) public override(IDeployLite) returns (address addr) {
+    function deploy(string memory name, bool forceUpdate) public override(IDeployLite) returns (address) {
         if (deployer == address(0)) deployer = msg.sender;
 
-        addr = readAddress(name);
-        uint256 codeDeployedLength = getCodeDeployed(name).length;
+        string memory nameLast = string.concat(name, "_last");
+        address addrName = readAddress(name);
+        address addrNameLast = readAddress(nameLast);
 
-        if (isSameDeployed(name)) {
-            log4(addr, _stringPad20(name), "Already deployed", _bytesPad5(codeDeployedLength));
-        } else {
-            if (isDeployed(name)) {
-                log4(addr, _stringPad20(name), "Older deployment", _bytesPad5(codeDeployedLength));
+        if (isSameDeployed(name, addrName)) {
+            log4(addrName, _stringPad20(name), "Already deployed", _bytesPad5(addrName.code.length));
 
-                if (!forceUpdate) return addr;
-            }
-            log4(address(0), name, "Deploying...", "");
-
-            string memory deployFunction = string.concat("deploy", name, "()");
-            (bool success, bytes memory result) = address(this).call(abi.encodeWithSignature(deployFunction));
-
-            require(success, "deploy call failed");
-            (addr) = abi.decode(result, (address));
-
-            writeAddress(name, addr);
-
-            log4(addr, _stringPad20(name), "New deployment", _bytesPad5(addr.code.length));
+            return addrName;
         }
+
+        if (isSameDeployed(name, addrNameLast)) {
+            log4(addrNameLast, _stringPad20(name), "Previously deployed", _bytesPad5(addrNameLast.code.length));
+
+            writeAddress(name, addrNameLast);
+            return addrNameLast;
+        }
+
+        if (isDeployed(name)) {
+            log4(addrName, _stringPad20(name), "Older deployment", _bytesPad5(addrName.code.length));
+
+            if (!forceUpdate) return addrName;
+        }
+
+        log4(address(0), name, "Deploying...", "");
+
+        string memory deployFunction = string.concat("deploy", name, "()");
+        (bool success, bytes memory result) = address(this).call(abi.encodeWithSignature(deployFunction));
+
+        require(success, "deploy call failed");
+        (address addrNew) = abi.decode(result, (address));
+
+        writeAddress(nameLast, addrNew);
+
+        log4(addrNew, _stringPad20(name), "New deployment", _bytesPad5(addrNew.code.length));
+
+        return addrNew;
     }
 
     function getAddress(string memory name) public override(IDeployLite) returns (address addr) {
@@ -69,8 +84,17 @@ contract DeployLite is Script, IDeployLite, DeployLiteRWJson {
         return getCodeDeployed(name).length > 0;
     }
 
+    function isSameDeployed(string memory nameToDeploy, address addressDeployed)
+        public
+        view
+        override(IDeployLite)
+        returns (bool)
+    {
+        return isSameRunCode(getCodeToDeploy(nameToDeploy), addressDeployed.code);
+    }
+
     function isSameDeployed(string memory name) public view override(IDeployLite) returns (bool) {
-        return isSameRunCode(getCodeToDeploy(name), getCodeDeployed(name));
+        return isSameDeployed(name, readAddress(name));
     }
 
     function setDeployer(address deployer_) public override(IDeployLite) {
