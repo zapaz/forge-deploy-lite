@@ -58,6 +58,20 @@ contract DeployLiteRWJson is IDeployLiteRWJson, DeployLiteUtils {
         return "";
     }
 
+    function readBytes32(string memory name) public view returns (bytes32) {
+        require(bytes(name).length != 0, "No name");
+
+        string memory json = _readJsonFile();
+        string memory nameKey = string.concat(".", vm.toString(block.chainid), ".", name);
+
+        if (vm.keyExists(json, nameKey)) {
+            bytes memory jsonBytes = vm.parseJson(json, nameKey);
+            return abi.decode(jsonBytes, (bytes32));
+        }
+
+        return "";
+    }
+
     function writeAddress(string memory name, address addr) public {
         require(bytes(name).length != 0, "No name");
 
@@ -83,12 +97,22 @@ contract DeployLiteRWJson is IDeployLiteRWJson, DeployLiteUtils {
                 for (uint256 i = 0; i < keys.length; i++) {
                     string memory keyName = keys[i];
                     bytes memory jsonBytes = vm.parseJson(jsonFromFile, string.concat(networkKey, ".", keyName));
-                    if (_stringEqual(keyName, "chainName")) {
-                        string memory str = abi.decode(jsonBytes, (string));
-                        vm.serializeString("network", keyName, str);
+
+                    if (jsonBytes.length == 32) {
+                        // value maybe address or bytes32
+                        if (uint256(bytes32(jsonBytes)) < (1 << 160)) {
+                            // value maybe address
+                            address addressValue = abi.decode(jsonBytes, (address));
+                            vm.serializeAddress("network", keyName, addressValue);
+                        } else {
+                            // value maybe bytes32
+                            bytes32 bytes32Value = abi.decode(jsonBytes, (bytes32));
+                            vm.serializeBytes32("network", keyName, bytes32Value);
+                        }
                     } else {
-                        address keyAddr = abi.decode(jsonBytes, (address));
-                        vm.serializeAddress("network", keyName, keyAddr);
+                        // value maybe string
+                        string memory stringValue = abi.decode(jsonBytes, (string));
+                        vm.serializeString("network", keyName, stringValue);
                     }
                 }
                 jsonNetwork = vm.serializeAddress("network", name, addr);
