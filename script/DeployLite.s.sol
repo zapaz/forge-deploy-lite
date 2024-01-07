@@ -9,12 +9,14 @@ import {DeployLiteRWJson} from "./DeployLiteRWJson.s.sol";
 // import {console} from "forge-std/console.sol";
 
 contract DeployLite is Script, IDeployLite, DeployLiteRWJson {
-    function deploy(string memory name, bytes memory data, bool noUpdate) public returns (DeployedState state) {
+    function deploy(string memory name, bytes memory data, bool update)
+        public
+        returns (address addr, DeployedState state)
+    {
         string memory nameLast = string.concat(name, "_last");
-        address addrName = readAddress(name);
-        address addrNameLast = readAddress(nameLast);
+        address addrName = _readAddress(name);
+        address addrNameLast = _readAddress(nameLast);
         string memory deployedLabel;
-        address addr;
 
         if (_isSameDeployed(name, data, addrName)) {
             addr = addrName;
@@ -25,7 +27,7 @@ contract DeployLite is Script, IDeployLite, DeployLiteRWJson {
             deployedLabel = "Previously deployed";
             state = DeployedState.Previously;
             writeAddress(name, addrNameLast);
-        } else if (_isDeployed(addrName) && noUpdate) {
+        } else if (_isDeployed(addrName) && !update) {
             addr = addrName;
             deployedLabel = "Older deployment";
             state = DeployedState.Older;
@@ -44,12 +46,12 @@ contract DeployLite is Script, IDeployLite, DeployLiteRWJson {
         log4(addr, _stringPad20(name), deployedLabel, _bytesPad5(addr.code.length));
     }
 
-    function deploy(string memory name) public returns (DeployedState state) {
-        return deploy(name, "", false);
+    function deploy(string memory name, bytes memory data) public returns (address addr, DeployedState state) {
+        return deploy(name, data, true);
     }
 
-    function deploy(string memory name, bytes memory data) public returns (DeployedState state) {
-        return deploy(name, data, false);
+    function deploy(string memory name) public returns (address addr, DeployedState state) {
+        return deploy(name, "", true);
     }
 
     function _create(bytes memory bytecode) internal returns (address addr) {
@@ -59,20 +61,20 @@ contract DeployLite is Script, IDeployLite, DeployLiteRWJson {
         }
     }
 
-    function _getDeployedCode(string memory name) private view returns (bytes memory) {
-        return vm.getDeployedCode(string.concat(name, ".sol:", name));
-    }
-
-    function _getCode(string memory name) private view returns (bytes memory) {
+    function _getCreationCode(string memory name) internal view returns (bytes memory) {
         return vm.getCode(string.concat(name, ".sol:", name));
     }
 
-    function _getCode(string memory name, bytes memory data) internal returns (bytes memory code) {
-        return _create(_getCreationCode(name, data)).code;
+    function _getCreationCode(string memory name, bytes memory data) internal view returns (bytes memory) {
+        return abi.encodePacked(_getCreationCode(name), data);
     }
 
-    function _getCreationCode(string memory name, bytes memory data) internal view returns (bytes memory) {
-        return abi.encodePacked(_getCode(name), data);
+    function _getCodeToDeploy(string memory name) internal view returns (bytes memory) {
+        return vm.getDeployedCode(string.concat(name, ".sol:", name));
+    }
+
+    function _getCodeToDeploy(string memory name, bytes memory data) internal returns (bytes memory code) {
+        return _create(_getCreationCode(name, data)).code;
     }
 
     function _isSameCode(bytes memory code1, bytes memory code2) internal view returns (bool) {
@@ -86,7 +88,7 @@ contract DeployLite is Script, IDeployLite, DeployLiteRWJson {
     function _isSameDeployed(string memory name, bytes memory data, address addr) internal returns (bool) {
         if (!_isDeployed(addr)) return false;
 
-        bytes memory code = _getCode(name, data);
+        bytes memory code = _getCodeToDeploy(name, data);
         if (_isSameCode(code, addr.code)) return true;
 
         return false;

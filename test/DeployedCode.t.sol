@@ -54,7 +54,7 @@ contract DeployedCodeTest is Test, DeployLite {
         console.log("test_deployedCode_3 ~ imm.code.length:", address(imm).code.length);
         console.logBytes(address(imm).code);
 
-        bytes memory code = _getCode("Immutable", abi.encode(42));
+        bytes memory code = _getCodeToDeploy("Immutable", abi.encode(42));
         console.log("test_deployedCode_3 ~ code.length:", code.length);
         console.logBytes(code);
 

@@ -10,7 +10,7 @@ interface IDeployLite {
         Previously
     }
 
-    function deploy(string memory name) external returns (DeployedState);
-    function deploy(string memory name, bytes memory data) external returns (DeployedState);
-    function deploy(string memory name, bytes memory data, bool noUpdate) external returns (DeployedState);
+    function deploy(string memory name) external returns (address addr, DeployedState state);
+    function deploy(string memory name, bytes memory data) external returns (address addr, DeployedState state);
+    function deploy(string memory name, bytes memory data, bool noUpdate) external returns (address, DeployedState);
 }

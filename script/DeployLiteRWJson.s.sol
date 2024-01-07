@@ -30,8 +30,14 @@ contract DeployLiteRWJson is IDeployLiteRWJson, DeployLiteUtils {
         _recording = recording_;
     }
 
-    function readAddress(string memory name) public view returns (address addr) {
-        require(bytes(name).length != 0, "No name");
+    function readAddress(string memory name) public view returns (address) {
+        address addr = _readAddress(name);
+        if (addr != address(0)) return addr;
+        return _readAddress(string.concat(name, "_last"));
+    }
+
+    function _readAddress(string memory name) public view returns (address addr) {
+        require(bytes(name).length > 0, "No name");
 
         if ((addr = _addresses[name]) != address(0)) return addr;
 
@@ -70,6 +76,18 @@ contract DeployLiteRWJson is IDeployLiteRWJson, DeployLiteUtils {
         }
 
         return "";
+    }
+
+    function getAddress(string memory name) public returns (address addr) {
+        addr = readAddress(name);
+
+        if (addr == address(0)) {
+            addr = makeAddr(name);
+            writeAddress(name, addr);
+            log4(addr, name, "New EOA", "");
+        } else {
+            log4(addr, name, "Existing", "");
+        }
     }
 
     function writeAddress(string memory name, address addr) public {
