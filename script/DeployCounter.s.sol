@@ -12,7 +12,6 @@ contract DeployCounter is DeployLite {
 
         // ...
         // put here additional code to intialize your deployed contract
-        // warning : use deployer instead of `msg.sender`
         // ...
 
         vm.stopBroadcast();

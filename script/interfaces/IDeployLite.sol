@@ -2,16 +2,15 @@
 pragma solidity ^0.8.0;
 
 interface IDeployLite {
-    function getAddress(string memory name) external returns (address);
-    function getCodeDeployed(string memory name) external view returns (bytes memory);
-    function getCodeToDeploy(string memory name) external view returns (bytes memory);
+    enum DeployedState {
+        None,
+        Older,
+        Newly,
+        Already,
+        Previously
+    }
 
-    function isDeployed(string memory name) external view returns (bool);
-    function isSameDeployed(string memory name) external view returns (bool);
-    function isSameDeployed(string memory nameToDeploy, address addressDeployed) external view returns (bool);
-    function isSameRunCode(bytes memory code1, bytes memory code2) external view returns (bool);
-
-    function setDeployer(address deployer) external;
-    function deploy(string memory name) external returns (address);
-    function deploy(string memory name, bool update) external returns (address);
+    function deploy(string memory name) external returns (DeployedState);
+    function deploy(string memory name, bytes memory data) external returns (DeployedState);
+    function deploy(string memory name, bytes memory data, bool noUpdate) external returns (DeployedState);
 }
