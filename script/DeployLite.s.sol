@@ -10,6 +10,8 @@ import {DeployLiteRWJson} from "./DeployLiteRWJson.s.sol";
 
 contract DeployLite is Script, IDeployLite, DeployLiteRWJson {
     function deployState(string memory name, bytes memory data) public returns (DeployState state) {
+        require(!isBroadcasting(), "deployState must be outside Broadcast");
+
         address addrName = _readAddress(name);
         address addrNameLast = _readAddress(string.concat(name, _LAST));
         string memory deployedLabel;
@@ -42,6 +44,8 @@ contract DeployLite is Script, IDeployLite, DeployLiteRWJson {
     }
 
     function deploy(string memory name, bytes memory data) public returns (address addr) {
+        require(isBroadcasting(), "deployState must be inside Broadcast");
+
         bytes memory code = _getCreationCode(name, data);
 
         addr = _create(code);
@@ -58,8 +62,8 @@ contract DeployLite is Script, IDeployLite, DeployLiteRWJson {
 
     function _create(bytes memory bytecode) internal returns (address addr) {
         assembly {
-            addr := create(0, add(bytecode, 0x20), mload(bytecode))
-            // addr := create2(0, add(0x20, bytecode), mload(bytecode), salt)
+            addr := create(callvalue(), add(0x20, bytecode), mload(bytecode))
+            // addr := create2(callvalue(), add(0x20, bytecode), mload(bytecode), salt)
         }
     }
 
@@ -80,7 +84,7 @@ contract DeployLite is Script, IDeployLite, DeployLiteRWJson {
     }
 
     function _isSameCode(bytes memory code1, bytes memory code2) internal view returns (bool) {
-        return _bytesEqual(_removeDeployedCodeMetadata(code1), _removeDeployedCodeMetadata(code2));
+        return _bytesEqual(_removeCbor(code1), _removeCbor(code2));
     }
 
     function _isDeployed(address addr) internal view returns (bool) {
@@ -100,7 +104,7 @@ contract DeployLite is Script, IDeployLite, DeployLiteRWJson {
         return bytecode.length < 2 ? 0 : uint16(bytes2(this.sliceBytes(bytecode, bytecode.length - 2, bytecode.length)));
     }
 
-    function _removeDeployedCodeMetadata(bytes memory bytecode) internal view returns (bytes memory) {
+    function _removeCbor(bytes memory bytecode) internal view returns (bytes memory) {
         uint256 len = _getCborLength(bytecode);
         return (bytecode.length >= len) ? this.sliceBytes(bytecode, 0, bytecode.length - len) : bytecode;
     }

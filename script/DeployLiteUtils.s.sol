@@ -2,6 +2,7 @@
 pragma solidity ^0.8.0;
 
 import "forge-std/Script.sol";
+
 import {IDeployLiteUtils} from "./interfaces/IDeployLiteUtils.sol";
 
 contract DeployLiteUtils is IDeployLiteUtils, Script {
@@ -27,6 +28,11 @@ contract DeployLiteUtils is IDeployLiteUtils, Script {
             log4(txOrigin, label, "txOrigin", mode);
             log4(msgSender, label, "msgSender", mode);
         }
+    }
+
+    function isBroadcasting() public returns (bool) {
+        (VmSafe.CallerMode callerMode,,) = vm.readCallers();
+        return (callerMode == VmSafe.CallerMode.Broadcast || callerMode == VmSafe.CallerMode.RecurrentBroadcast);
     }
 
     function sliceBytes(bytes calldata data, uint256 start, uint256 end)

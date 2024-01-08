@@ -43,9 +43,8 @@ contract BytecodeTest is Test, DeployLite {
     }
 
     function test_bytecodes_without_metadata_equals() public view {
-        bytes memory bytecodeWithoutMetadata = _removeDeployedCodeMetadata(vm.getDeployedCode("HowMany.sol:HowMany"));
-        bytes memory bytecodeBisWithoutMetadata =
-            _removeDeployedCodeMetadata(vm.getDeployedCode("HowManyBis.sol:HowMany"));
+        bytes memory bytecodeWithoutMetadata = _removeCbor(vm.getDeployedCode("HowMany.sol:HowMany"));
+        bytes memory bytecodeBisWithoutMetadata = _removeCbor(vm.getDeployedCode("HowManyBis.sol:HowMany"));
 
         assert(keccak256(bytecodeWithoutMetadata) == keccak256(bytecodeBisWithoutMetadata));
     }
