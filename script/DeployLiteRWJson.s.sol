@@ -16,6 +16,8 @@ import {DeployLiteUtils} from "./DeployLiteUtils.s.sol";
 //   }
 // }
 contract DeployLiteRWJson is IDeployLiteRWJson, DeployLiteUtils {
+    string constant _LAST = "_last";
+
     mapping(string => address) internal _addresses;
 
     string internal _jsonFile = "addresses.json";
@@ -30,10 +32,9 @@ contract DeployLiteRWJson is IDeployLiteRWJson, DeployLiteUtils {
         _recording = recording_;
     }
 
-    function readAddress(string memory name) public view returns (address) {
-        address addr = _readAddress(name);
-        if (addr != address(0)) return addr;
-        return _readAddress(string.concat(name, "_last"));
+    function readAddress(string memory name) public view returns (address addr) {
+        addr = _readAddress(string.concat(name, _LAST));
+        if (addr == address(0)) addr = _readAddress(name);
     }
 
     function _readAddress(string memory name) public view returns (address addr) {

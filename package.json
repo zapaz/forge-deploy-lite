@@ -1,6 +1,6 @@
 {
   "name": "forge-deploy-lite",
-  "version": "0.3.1",
+  "version": "0.3.2",
   "description": "One Script library to deploy contracts with forge and register addresses",
   "main": "",
   "scripts": {
@@ -9,11 +9,12 @@
     "build": "forge build",
     "test": "forge test",
     "format": "forge fmt",
-    "simulate": "forge script script/DeployCounter.s.sol --rpc-url $CHAIN_NAME",
-    "deploy": "forge script script/DeployCounter.s.sol",
-    "deploy-anvil": "npm run deploy-anvil-cmd && npm run deploy-anvil-cmd",
-    "deploy-anvil-cmd": "forge script script/DeployCounter.s.sol --rpc-url anvil --broadcast --sender $ANVIL_ETH_FROM --private-key $ANVIL_PRIVATE_KEY",
-    "deploy-onchain": "forge script script/DeployCounter.s.sol --private-key $PRIVATE_KEY --rpc-url $CHAIN_NAME --broadcast --verify"
+    "simulate": "forge script script/DeployAll.s.sol --rpc-url $CHAIN_NAME",
+    "deploy": "forge script script/DeployAll.s.sol",
+    "deploy-anvil": "forge script script/DeployAll.s.sol --rpc-url anvil --broadcast --sender $ANVIL_ETH_FROM --private-key $ANVIL_PRIVATE_KEY",
+    "deploy-anvil2": "npm run deploy-anvil && forge script script/DeployAll.s.sol --rpc-url anvil",
+    "deploy-onchain": "forge script script/DeployAll.s.sol --private-key $PRIVATE_KEY --rpc-url $CHAIN_NAME --broadcast --verify",
+    "deploy-onchain2": "npm run deploy-onchain && forge script script/DeployAll.s.sol"
   },
   "keywords": [
     "forge",

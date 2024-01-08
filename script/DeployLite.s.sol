@@ -9,49 +9,51 @@ import {DeployLiteRWJson} from "./DeployLiteRWJson.s.sol";
 // import {console} from "forge-std/console.sol";
 
 contract DeployLite is Script, IDeployLite, DeployLiteRWJson {
-    function deploy(string memory name, bytes memory data, bool update)
-        public
-        returns (address addr, DeployedState state)
-    {
-        string memory nameLast = string.concat(name, "_last");
+    function deployState(string memory name, bytes memory data) public returns (DeployState state) {
         address addrName = _readAddress(name);
-        address addrNameLast = _readAddress(nameLast);
+        address addrNameLast = _readAddress(string.concat(name, _LAST));
         string memory deployedLabel;
+        address addr;
 
         if (_isSameDeployed(name, data, addrName)) {
             addr = addrName;
             deployedLabel = "Already deployed";
-            state = DeployedState.Already;
+            state = DeployState.Already;
         } else if (_isSameDeployed(name, data, addrNameLast)) {
             addr = addrNameLast;
-            deployedLabel = "Previously deployed";
-            state = DeployedState.Previously;
-            writeAddress(name, addrNameLast);
-        } else if (_isDeployed(addrName) && !update) {
+            deployedLabel = "Newly deployed";
+            writeAddress(name, addr);
+            state = DeployState.Newly;
+        } else if (_isDeployed(addrName)) {
             addr = addrName;
             deployedLabel = "Older deployment";
-            state = DeployedState.Older;
+            state = DeployState.Older;
         } else {
-            bytes memory code = _getCreationCode(name, data);
-
-            vm.broadcast();
-            addr = _create(code);
-            assert(addr != address(0));
-
-            deployedLabel = "New deployment";
-            writeAddress(nameLast, addr);
-            state = DeployedState.Newly;
+            addr = address(0);
+            deployedLabel = "No deployment";
+            state = DeployState.None;
         }
 
         log4(addr, _stringPad20(name), deployedLabel, _bytesPad5(addr.code.length));
     }
 
-    function deploy(string memory name, bytes memory data) public returns (address addr, DeployedState state) {
-        return deploy(name, data, true);
+    function deployState(string memory name) public returns (DeployState state) {
+        return deployState(name, "");
     }
 
-    function deploy(string memory name) public returns (address addr, DeployedState state) {
-        return deploy(name, "", true);
+    function deploy(string memory name, bytes memory data) public returns (address addr) {
+        bytes memory code = _getCreationCode(name, data);
+
+        addr = _create(code);
+
+        assert(addr != address(0));
+        writeAddress(string.concat(name, _LAST), addr);
+
+        log4(addr, _stringPad20(name), "New deployment", _bytesPad5(addr.code.length));
+    }
+
+    function deploy(string memory name) public returns (address addr) {
+        return deploy(name, "");
     }
 
     function _create(bytes memory bytecode) internal returns (address addr) {

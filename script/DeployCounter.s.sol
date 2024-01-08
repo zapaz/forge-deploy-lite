@@ -6,18 +6,22 @@ import {Counter} from "../src/Counter.sol";
 
 contract DeployCounter is DeployLite {
     function deployCounter() public returns (address counter) {
-        vm.startBroadcast();
+        DeployState state = deployState("Counter");
 
-        counter = address(new Counter());
+        if (state == DeployState.None) {
+            vm.startBroadcast();
 
-        // ...
-        // put here additional code to intialize your deployed contract
-        // ...
+            counter = deploy("Counter");
 
-        vm.stopBroadcast();
+            // ...
+            // put here additional code to intialize your deployed contract
+            // ...
+
+            vm.stopBroadcast();
+        }
     }
 
     function run() public virtual {
-        deploy("Counter");
+        deployCounter();
     }
 }
