@@ -15,8 +15,9 @@ contract DeployLite is Script, IDeployLite, DeployLiteRWJson {
     function deployState(string memory name, bytes memory data) public returns (DeployState state) {
         require(!isBroadcasting(), "deployState must be outside Broadcast");
 
+        string memory nameLast = string.concat(name, _LAST);
         address addrName = _readAddress(name);
-        address addrNameLast = _readAddress(string.concat(name, _LAST));
+        address addrNameLast = _readAddress(nameLast);
         string memory deployedLabel;
         address addr;
 
@@ -31,6 +32,7 @@ contract DeployLite is Script, IDeployLite, DeployLiteRWJson {
                 deployedLabel = "Already deployed";
                 state = DeployState.Already;
                 writeAddress(name, addr);
+                removeAddress(nameLast);
             }
         } else if (_isSameDeployed(name, data, addrName)) {
             addr = addrName;

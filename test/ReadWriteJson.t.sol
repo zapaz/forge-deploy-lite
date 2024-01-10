@@ -101,4 +101,29 @@ contract ReadWriteJsonTest is Test, DeployLiteRWJson {
 
         vm.removeFile(_jsonFile);
     }
+
+    function test_ReadWriteJson_removeAddress() public {
+        setJsonFile("out/test_ReadWriteJson_removeAddress.json");
+        vm.writeJson(
+            string.concat(
+                '{"',
+                vm.toString(block.chainid),
+                '":{"Address1":"',
+                vm.toString(address(makeAddr("Un"))),
+                '","Address2":"',
+                vm.toString(address(makeAddr("Deux"))),
+                '"}}'
+            ),
+            _jsonFile
+        );
+
+
+        writeAddress("Address3", address(makeAddr("Trois")));
+
+        assertEq(readAddress("Address1"), address(makeAddr("Un")));
+        assertEq(readAddress("Address2"), address(makeAddr("Deux")));
+        assertEq(readAddress("Address3"), address(makeAddr("Trois")));
+        
+        vm.removeFile(_jsonFile);
+    }
 }

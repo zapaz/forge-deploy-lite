@@ -1,7 +1,7 @@
 {
   "name": "forge-deploy-lite",
-  "version": "0.3.4",
-  "description": "One Script library to deploy contracts with forge and register addresses",
+  "version": "0.3.5",
+  "description": "An IdemPotent Script to Deploy Multiple Contracts across Various Chains and Register all Addresses for Frontend Dapp",
   "main": "",
   "scripts": {
     "all": "forge clean && forge fmt && forge build && forge test",
@@ -12,9 +12,9 @@
     "simulate": "forge script script/DeployAll.s.sol --rpc-url $CHAIN_NAME",
     "deploy": "forge script script/DeployAll.s.sol",
     "deploy-anvil": "forge script script/DeployAll.s.sol --rpc-url anvil --broadcast --sender $ANVIL_ETH_FROM --private-key $ANVIL_PRIVATE_KEY",
-    "deploy-anvil2": "npm run deploy-anvil && forge script script/DeployAll.s.sol --rpc-url anvil",
+    "check-anvil": "forge script script/DeployAll.s.sol --rpc-url anvil",
     "deploy-onchain": "forge script script/DeployAll.s.sol --private-key $PRIVATE_KEY --rpc-url $CHAIN_NAME --broadcast --verify",
-    "deploy-onchain2": "npm run deploy-onchain && forge script script/DeployAll.s.sol"
+    "check-onchain": "forge script script/DeployAll.s.sol"
   },
   "keywords": [
     "forge",

@@ -52,7 +52,7 @@ contract DeployLiteRWJson is IDeployLiteRWJson, DeployLiteUtils {
     }
 
     function readString(string memory name) public view returns (string memory) {
-        require(bytes(name).length != 0, "No name");
+        require(bytes(name).length > 0, "No name");
 
         string memory json = _readJsonFile();
         string memory nameKey = string.concat(".", vm.toString(block.chainid), ".", name);
@@ -66,7 +66,7 @@ contract DeployLiteRWJson is IDeployLiteRWJson, DeployLiteUtils {
     }
 
     function readBytes32(string memory name) public view returns (bytes32) {
-        require(bytes(name).length != 0, "No name");
+        require(bytes(name).length > 0, "No name");
 
         string memory json = _readJsonFile();
         string memory nameKey = string.concat(".", vm.toString(block.chainid), ".", name);
@@ -91,8 +91,26 @@ contract DeployLiteRWJson is IDeployLiteRWJson, DeployLiteUtils {
         }
     }
 
+    function removeAddress(string memory name) public {
+        require(bytes(name).length > 0, "No name");
+
+        // remove address to file only when recording
+        if (!(_recording)) return;
+
+        string memory networkKey = string.concat(".", vm.toString(block.chainid));
+        string memory nameKey = string.concat(networkKey, ".", name);
+
+        string memory jsonFromFile = _readJsonFile();
+        vm.serializeJson("root", jsonFromFile);
+
+        if (vm.keyExists(jsonFromFile, nameKey)) {
+            string memory jsonNetwork = _jsonToObject(jsonFromFile, networkKey, name, true);
+            vm.writeJson(jsonNetwork, _jsonFile, networkKey);
+        }
+    }
+
     function writeAddress(string memory name, address addr) public {
-        require(bytes(name).length != 0, "No name");
+        require(bytes(name).length > 0, "No name");
 
         _addresses[name] = addr;
 
@@ -111,37 +129,48 @@ contract DeployLiteRWJson is IDeployLiteRWJson, DeployLiteUtils {
             if (vm.keyExists(jsonFromFile, nameKey)) {
                 vm.writeJson(vm.toString(addr), _jsonFile, nameKey);
             } else {
-                string[] memory keys = vm.parseJsonKeys(jsonFromFile, networkKey);
+                _jsonToObject(jsonFromFile, networkKey, name, false);
 
-                for (uint256 i = 0; i < keys.length; i++) {
-                    string memory keyName = keys[i];
-                    bytes memory jsonBytes = vm.parseJson(jsonFromFile, string.concat(networkKey, ".", keyName));
-
-                    if (jsonBytes.length == 32) {
-                        // value maybe address or bytes32
-                        if (uint256(bytes32(jsonBytes)) < (1 << 160)) {
-                            // value maybe address
-                            address addressValue = abi.decode(jsonBytes, (address));
-                            vm.serializeAddress("network", keyName, addressValue);
-                        } else {
-                            // value maybe bytes32
-                            bytes32 bytes32Value = abi.decode(jsonBytes, (bytes32));
-                            vm.serializeBytes32("network", keyName, bytes32Value);
-                        }
-                    } else {
-                        // value maybe string
-                        string memory stringValue = abi.decode(jsonBytes, (string));
-                        vm.serializeString("network", keyName, stringValue);
-                    }
-                }
-                jsonNetwork = vm.serializeAddress("network", name, addr);
+                jsonNetwork = vm.serializeAddress(string.concat(networkKey, name), name, addr);
                 vm.writeJson(jsonNetwork, _jsonFile, networkKey);
             }
         } else {
             vm.serializeString("network", "chainName", "");
             jsonNetwork = vm.serializeAddress("network", name, addr);
-            string memory json = vm.serializeString("root", vm.toString(block.chainid), jsonNetwork);
-            vm.writeJson(json, _jsonFile);
+            string memory jsonRoot = vm.serializeString("root", vm.toString(block.chainid), jsonNetwork);
+            vm.writeJson(jsonRoot, _jsonFile);
+        }
+    }
+
+    function _jsonToObject(string memory json, string memory objectKey, string memory name, bool remove)
+        internal
+        returns (string memory jsonObject)
+    {
+        string[] memory keys = vm.parseJsonKeys(json, objectKey);
+        string memory randomKey = string.concat(objectKey, name);
+
+        for (uint256 i = 0; i < keys.length; i++) {
+            string memory keyName = keys[i];
+            if (remove && keccak256(abi.encode(keyName)) == keccak256(abi.encode(name))) continue;
+
+            bytes memory jsonBytes = vm.parseJson(json, string.concat(objectKey, ".", keyName));
+
+            if (jsonBytes.length == 32) {
+                // value can be address or bytes32
+                if (uint256(bytes32(jsonBytes)) < (1 << 160)) {
+                    // value maybe address
+                    address addressValue = abi.decode(jsonBytes, (address));
+                    jsonObject = vm.serializeAddress(randomKey, keyName, addressValue);
+                } else {
+                    // value maybe bytes32
+                    bytes32 bytes32Value = abi.decode(jsonBytes, (bytes32));
+                    jsonObject = vm.serializeBytes32(randomKey, keyName, bytes32Value);
+                }
+            } else {
+                // value maybe string
+                string memory stringValue = abi.decode(jsonBytes, (string));
+                jsonObject = vm.serializeString(randomKey, keyName, stringValue);
+            }
         }
     }
 
