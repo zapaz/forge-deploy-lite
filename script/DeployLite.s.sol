@@ -9,6 +9,9 @@ import {DeployLiteRWJson} from "./DeployLiteRWJson.s.sol";
 // import {console} from "forge-std/console.sol";
 
 contract DeployLite is Script, IDeployLite, DeployLiteRWJson {
+    mapping(string => DeployState) private _state;
+    mapping(string => bool) private _created;
+
     function deployState(string memory name, bytes memory data) public returns (DeployState state) {
         require(!isBroadcasting(), "deployState must be outside Broadcast");
 
@@ -17,15 +20,22 @@ contract DeployLite is Script, IDeployLite, DeployLiteRWJson {
         string memory deployedLabel;
         address addr;
 
-        if (_isSameDeployed(name, data, addrName)) {
+        DeployState stateBefore = _state[name];
+
+        if (_isSameDeployed(name, data, addrNameLast)) {
+            addr = addrNameLast;
+            if (_created[name]) {
+                assert(stateBefore == DeployState.New);
+                state = DeployState.New;
+            } else {
+                deployedLabel = "Already deployed";
+                state = DeployState.Already;
+                writeAddress(name, addr);
+            }
+        } else if (_isSameDeployed(name, data, addrName)) {
             addr = addrName;
             deployedLabel = "Already deployed";
             state = DeployState.Already;
-        } else if (_isSameDeployed(name, data, addrNameLast)) {
-            addr = addrNameLast;
-            deployedLabel = "Newly deployed";
-            writeAddress(name, addr);
-            state = DeployState.Newly;
         } else if (_isDeployed(addrName)) {
             addr = addrName;
             deployedLabel = "Older deployment";
@@ -36,7 +46,10 @@ contract DeployLite is Script, IDeployLite, DeployLiteRWJson {
             state = DeployState.None;
         }
 
-        log4(addr, _stringPad20(name), deployedLabel, _bytesPad5(addr.code.length));
+        if (state != stateBefore) {
+            _state[name] = state;
+            log4(addr, _stringPad20(name), deployedLabel, _bytesPad5(addr.code.length));
+        }
     }
 
     function deployState(string memory name) public returns (DeployState state) {
@@ -52,6 +65,8 @@ contract DeployLite is Script, IDeployLite, DeployLiteRWJson {
 
         assert(addr != address(0));
         writeAddress(string.concat(name, _LAST), addr);
+        _created[name] = true;
+        _state[name] = DeployState.New;
 
         log4(addr, _stringPad20(name), "New deployment", _bytesPad5(addr.code.length));
     }

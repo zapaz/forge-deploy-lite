@@ -3,10 +3,11 @@ pragma solidity ^0.8.0;
 
 interface IDeployLite {
     enum DeployState {
+        Null,
         None,
-        Older,
+        New,
         Already,
-        Newly
+        Older
     }
 
     function deployState(string memory name, bytes memory data) external returns (DeployState state);
