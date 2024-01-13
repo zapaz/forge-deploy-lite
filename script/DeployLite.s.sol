@@ -65,7 +65,6 @@ contract DeployLite is Script, IDeployLite, DeployLiteRWJson {
 
         addr = _create(code);
 
-        assert(addr != address(0));
         writeAddress(string.concat(name, _LAST), addr);
         _created[name] = true;
         _state[name] = DeployState.New;
@@ -78,10 +77,15 @@ contract DeployLite is Script, IDeployLite, DeployLiteRWJson {
     }
 
     function _create(bytes memory bytecode) internal returns (address addr) {
+        require(bytecode.length > 0, "create failed: bytecode empty");
+
         assembly {
             addr := create(callvalue(), add(0x20, bytecode), mload(bytecode))
             // addr := create2(callvalue(), add(0x20, bytecode), mload(bytecode), salt)
         }
+
+        require(addr != address(0), "create failed: address 0");
+        require(addr.code.length > 0, "create failed: code empty");
     }
 
     function _getCreationCode(string memory name) internal view returns (bytes memory) {
@@ -89,7 +93,7 @@ contract DeployLite is Script, IDeployLite, DeployLiteRWJson {
     }
 
     function _getCreationCode(string memory name, bytes memory data) internal view returns (bytes memory) {
-        return abi.encodePacked(_getCreationCode(name), data);
+        return bytes.concat(_getCreationCode(name), data);
     }
 
     function _getCodeToDeploy(string memory name) internal view returns (bytes memory) {

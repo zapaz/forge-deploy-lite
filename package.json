@@ -1,6 +1,6 @@
 {
   "name": "forge-deploy-lite",
-  "version": "0.3.5",
+  "version": "0.3.6",
   "description": "An IdemPotent Script to Deploy Multiple Contracts across Various Chains and Register all Addresses for Frontend Dapp",
   "main": "",
   "scripts": {
