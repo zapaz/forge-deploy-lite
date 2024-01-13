@@ -9,12 +9,11 @@
     "build": "forge build",
     "test": "forge test",
     "format": "forge fmt",
-    "simulate": "forge script script/DeployAll.s.sol --rpc-url $CHAIN_NAME",
     "deploy": "forge script script/DeployAll.s.sol",
-    "deploy-anvil": "forge script script/DeployAll.s.sol --rpc-url anvil --broadcast --sender $ANVIL_ETH_FROM --private-key $ANVIL_PRIVATE_KEY",
-    "check-anvil": "forge script script/DeployAll.s.sol --rpc-url anvil",
-    "deploy-onchain": "forge script script/DeployAll.s.sol --private-key $PRIVATE_KEY --rpc-url $CHAIN_NAME --broadcast --verify",
-    "check-onchain": "forge script script/DeployAll.s.sol"
+    "deploy:anvil": "forge script script/DeployAll.s.sol --fork-url anvil --sender $ANVIL_SENDER --account $ANVIL_ACCOUNT --broadcast",
+    "check:anvil": "forge script script/DeployAll.s.sol --fork-url anvil",
+    "deploy:testnet": "forge script script/DeployAll.s.sol --fork-url $CHAIN --sender $TESTNET_SENDER --account $TESTNET_ACCOUNT  --broadcast --verify",
+    "check:testnet": "forge script script/DeployAll.s.sol"
   },
   "keywords": [
     "forge",
