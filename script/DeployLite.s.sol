@@ -59,7 +59,7 @@ contract DeployLite is Script, IDeployLite, DeployLiteRWJson {
     }
 
     function deploy(string memory name, bytes memory data) public returns (address addr) {
-        require(isBroadcasting(), "deployState must be inside Broadcast");
+        require(isBroadcasting(), "deploy must be inside Broadcast");
 
         bytes memory code = _getCreationCode(name, data);
 
