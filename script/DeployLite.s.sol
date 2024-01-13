@@ -101,6 +101,7 @@ contract DeployLite is Script, IDeployLite, DeployLiteRWJson {
     }
 
     function _getCodeToDeploy(string memory name, bytes memory data) internal returns (bytes memory code) {
+        vm.prank(msg.sender);
         return _create(_getCreationCode(name, data)).code;
     }
 
