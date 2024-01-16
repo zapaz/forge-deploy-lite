@@ -2,8 +2,8 @@
 pragma solidity ^0.8.0;
 
 import {Test, console} from "forge-std/Test.sol";
-import {Immutable} from "../src/Immutable.sol";
-import {DeployLite} from "../script/DeployLite.s.sol";
+import {Immutable} from "../src/examples/Immutable.sol";
+import {DeployLite} from "../src/DeployLite.s.sol";
 
 contract DeployedCodeTest is Test, DeployLite {
     function setUp() public view {

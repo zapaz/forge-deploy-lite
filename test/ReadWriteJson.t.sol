@@ -2,7 +2,7 @@
 pragma solidity ^0.8.0;
 
 import "forge-std/Test.sol";
-import "../script/DeployLiteRWJson.s.sol";
+import "../src/DeployLiteRWJson.s.sol";
 
 contract ReadWriteJsonTest is Test, DeployLiteRWJson {
     using stdJson for string;
@@ -123,7 +123,7 @@ contract ReadWriteJsonTest is Test, DeployLiteRWJson {
         assertEq(readAddress("Address1"), address(makeAddr("Un")));
         assertEq(readAddress("Address2"), address(makeAddr("Deux")));
         assertEq(readAddress("Address3"), address(makeAddr("Trois")));
-        
+
         vm.removeFile(_jsonFile);
     }
 }

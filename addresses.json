@@ -1,0 +1,14 @@
+{
+  "11155111": {
+    "chainName": "sepolia"
+  },
+  "31337": {
+    "Complex": "0x95bD8D42f30351685e96C62EDdc0d0613bf9a87A",
+    "Counter": "0x0116686E2291dbd5e317F47faDBFb43B599786Ef",
+    "Id32": "0x1b65ea1a8e546cc3009bce9a1534d01fc5e09f04603be6a067de97db81614970",
+    "Immutable": "0x9bAaB117304f7D6517048e371025dB8f89a8DbE5",
+    "MsgSender": "0x1804c8AB1F12E6bbf3894d4083f33e07309d1f38",
+    "This": "0x7FA9385bE102ac3EAc297483Dd6233D62b3e1496",
+    "chainName": "local"
+  }
+}
