@@ -50,9 +50,15 @@ contract DeployLite is Script, IDeployLite, DeployLiteRWJson {
         string memory deployedLabel;
         address addr;
 
+        bytes memory deployedCodeExpected;
+        if (immut) {
+            deployedCodeExpected = _getDeployedCodeExpected(name, data);
+        } else {
+            deployedCodeExpected = _getDeployedCodeExpected(name);
+        }
         DeployState stateBefore = _state[name];
 
-        if (_isSameDeployed(name, data, immut, addrNameLast)) {
+        if (_isSameCode(deployedCodeExpected, addrNameLast.code)) {
             addr = addrNameLast;
             if (_created[name]) {
                 assert(stateBefore == DeployState.New);
@@ -63,7 +69,7 @@ contract DeployLite is Script, IDeployLite, DeployLiteRWJson {
                 writeAddress(name, addr);
                 removeAddress(nameLast);
             }
-        } else if (_isSameDeployed(name, data, immut, addrName)) {
+        } else if (_isSameCode(deployedCodeExpected, addrName.code)) {
             addr = addrName;
             deployedLabel = "Already deployed";
             state = DeployState.Already;
@@ -129,12 +135,25 @@ contract DeployLite is Script, IDeployLite, DeployLiteRWJson {
         return bytes.concat(_getCreationCode(name), data);
     }
 
-    function _getCodeToDeploy(string memory name) internal view returns (bytes memory) {
+    function _getDeployedCodeExpected(string memory name) internal view returns (bytes memory) {
         return vm.getDeployedCode(string.concat(name, ".sol:", name));
     }
 
-    function _getCodeToDeploy(string memory name, bytes memory data) internal returns (bytes memory code) {
-        return _create(_getCreationCode(name, data)).code;
+    // simulate create to get expected deployed code
+    // on another fork in order NOT to increment deployer nonce...
+    function _getDeployedCodeExpected(string memory name, bytes memory data)
+        internal
+        returns (bytes memory deployedCodeExpected)
+    {
+        uint256 activeFork = vm.activeFork();
+        uint256 activeChainId = block.chainid;
+
+        vm.createSelectFork(vm.envString("CHAIN"));
+        require(activeChainId == block.chainid, "CHAIN should be same as fork");
+
+        deployedCodeExpected = _create(_getCreationCode(name, data)).code;
+
+        vm.selectFork(activeFork);
     }
 
     function _isSameCode(bytes memory code1, bytes memory code2) internal view returns (bool) {
@@ -143,15 +162,6 @@ contract DeployLite is Script, IDeployLite, DeployLiteRWJson {
 
     function _isDeployed(address addr) internal view returns (bool) {
         return addr.code.length > 0;
-    }
-
-    function _isSameDeployed(string memory name, bytes memory data, bool immut, address addr) internal returns (bool) {
-        if (!_isDeployed(addr)) return false;
-
-        bytes memory code = immut ? _getCodeToDeploy(name, data) : _getCodeToDeploy(name);
-        if (_isSameCode(code, addr.code)) return true;
-
-        return false;
     }
 
     function _getCborLength(bytes memory bytecode) internal view returns (uint16) {

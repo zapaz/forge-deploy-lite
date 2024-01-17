@@ -27,9 +27,9 @@ contract DeployedCodeTest is Test, DeployLite {
         console.log("test_deployedCode_1 ~ imm.code.length:", address(imm).code.length);
         console.logBytes(address(imm).code);
 
-        bytes memory codeToDeploy = vm.getCode("Immutable.sol");
-        console.log("test_deployedCode_1 ~ getDeployedCode.length:", codeToDeploy.length);
-        console.logBytes(codeToDeploy);
+        bytes memory deployedCodeExpected = vm.getCode("Immutable.sol");
+        console.log("test_deployedCode_1 ~ getDeployedCode.length:", deployedCodeExpected.length);
+        console.logBytes(deployedCodeExpected);
     }
 
     function test_deployedCode_2() public {
@@ -50,11 +50,14 @@ contract DeployedCodeTest is Test, DeployLite {
     }
 
     function test_deployedCode_3() public {
+        // vm.setEnv("CHAIN", "anvil");
+        // vm.createSelectFork("anvil");
+
         Immutable imm = new Immutable(42, 5);
         console.log("test_deployedCode_3 ~ imm.code.length:", address(imm).code.length);
         console.logBytes(address(imm).code);
 
-        bytes memory code = _getCodeToDeploy("Immutable", abi.encode(42, 5));
+        bytes memory code = _getDeployedCodeExpected("Immutable", abi.encode(42, 5));
         console.log("test_deployedCode_3 ~ code.length:", code.length);
         console.logBytes(code);
 

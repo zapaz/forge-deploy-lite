@@ -9,11 +9,13 @@
     "build": "forge build",
     "test": "forge test",
     "format": "forge fmt",
-    "deploy": "forge script script/DeployAll.s.sol",
-    "deploy:anvil": "forge script script/DeployAll.s.sol --fork-url anvil --sender $ANVIL_SENDER --account $ANVIL_ACCOUNT --broadcast",
-    "check:anvil": "forge script script/DeployAll.s.sol --fork-url anvil",
-    "deploy:testnet": "forge script script/DeployAll.s.sol --fork-url $CHAIN --sender $TESTNET_SENDER --account $TESTNET_ACCOUNT  --broadcast --verify",
-    "check:testnet": "forge script script/DeployAll.s.sol"
+    "deploy:deploy": "pnpm run deploy:all --fork-url $CHAIN --account $ACCOUNT --broadcast",
+    "deploy:validate": "pnpm run deploy:all --fork-url $CHAIN ",
+    "deploy:testnet": "DEPLOYER=$TESTNET_DEPLOYER ACCOUNT=$TESTNET_ACCOUNT pnpm deploy:deploy --verify",
+    "deploy:mainnet": "DEPLOYER=$MAINNET_DEPLOYER ACCOUNT=$MAINNET_ACCOUNT pnpm deploy:deploy --verify",
+    "deploy:anvil": "CHAIN=anvil DEPLOYER=$ANVIL_DEPLOYER ACCOUNT=$ANVIL_ACCOUNT pnpm run deploy:deploy",
+    "deploy:sepolia": "CHAIN=sepolia pnpm run deploy:testnet",
+    "deploy:all": "forge script script/DeployAll.s.sol"
   },
   "keywords": [
     "forge",
