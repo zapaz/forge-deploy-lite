@@ -117,7 +117,6 @@ contract ReadWriteJsonTest is Test, DeployLiteRWJson {
             _jsonFile
         );
 
-
         writeAddress("Address3", address(makeAddr("Trois")));
 
         assertEq(readAddress("Address1"), address(makeAddr("Un")));

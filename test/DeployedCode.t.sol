@@ -50,8 +50,10 @@ contract DeployedCodeTest is Test, DeployLite {
     }
 
     function test_deployedCode_3() public {
-        // vm.setEnv("CHAIN", "anvil");
-        // vm.createSelectFork("anvil");
+        vm.skip(true);
+
+        vm.setEnv("CHAIN", "anvil");
+        vm.createSelectFork("anvil");
 
         Immutable imm = new Immutable(42, 5);
         console.log("test_deployedCode_3 ~ imm.code.length:", address(imm).code.length);
