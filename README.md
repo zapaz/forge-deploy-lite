@@ -57,7 +57,7 @@ contract DeployCounter is DeployLite {
 
         // ...
         // put here additional code to intialize your deployed contract
-        // warning : use deployer instead of `msg.sender`
+
         // ...
 
         vm.stopBroadcast();
@@ -72,8 +72,6 @@ contract DeployCounter is DeployLite {
 For your contract, just replace everywhere `Counter` by the name of your contract (in imports, text field, and function/contracts/file names).
 
 DeployLite checks onchain if bytecode is already deployed, and then stops if this is the case, or deploys contract and writes deployed address in `adresses.json`
-
-DeployLite links `deploy("Counter")` to `deployCounter` via a low level `call` that changes `msg.sender` (to the deploy script address), so use `deployer` instead (similar reason to OZ `_msgSender()`)
 
 ## deploy
 

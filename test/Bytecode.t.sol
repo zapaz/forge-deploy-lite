@@ -2,8 +2,8 @@
 pragma solidity ^0.8.0;
 
 import {Test, console} from "forge-std/Test.sol";
-import {HowMany} from "../src/HowMany.sol";
-import {DeployLite} from "../script/DeployLite.s.sol";
+import {HowMany} from "../src/examples/HowMany.sol";
+import {DeployLite} from "../src/DeployLite.s.sol";
 
 contract BytecodeTest is Test, DeployLite {
     address counter;
@@ -43,9 +43,8 @@ contract BytecodeTest is Test, DeployLite {
     }
 
     function test_bytecodes_without_metadata_equals() public view {
-        bytes memory bytecodeWithoutMetadata = _removeDeployedCodeMetadata(vm.getDeployedCode("HowMany.sol:HowMany"));
-        bytes memory bytecodeBisWithoutMetadata =
-            _removeDeployedCodeMetadata(vm.getDeployedCode("HowManyBis.sol:HowMany"));
+        bytes memory bytecodeWithoutMetadata = _removeCbor(vm.getDeployedCode("HowMany.sol:HowMany"));
+        bytes memory bytecodeBisWithoutMetadata = _removeCbor(vm.getDeployedCode("HowManyBis.sol:HowMany"));
 
         assert(keccak256(bytecodeWithoutMetadata) == keccak256(bytecodeBisWithoutMetadata));
     }

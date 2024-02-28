@@ -1,0 +1,12 @@
+{
+  "favorites.resources": [
+    {
+      "filePath": "script/DeployLite.s.sol",
+      "group": "Default"
+    },
+    {
+      "filePath": "addresses.json",
+      "group": "Default"
+    }
+  ]
+}

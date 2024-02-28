@@ -1,7 +1,7 @@
 {
   "name": "forge-deploy-lite",
-  "version": "0.1.8",
-  "description": "One Script library to deploy contracts with forge and register addresses",
+  "version": "0.3.7",
+  "description": "An IdemPotent Script to Deploy Multiple Contracts across Various Chains and Register all Addresses for Frontend Dapp",
   "main": "",
   "scripts": {
     "all": "forge clean && forge fmt && forge build && forge test",
@@ -9,8 +9,13 @@
     "build": "forge build",
     "test": "forge test",
     "format": "forge fmt",
-    "simulate": "forge script script/DeployCounter.s.sol --rpc-url $CHAIN_NAME",
-    "deploy": "forge script script/DeployCounter.s.sol --private-key $PRIVATE_KEY --rpc-url $CHAIN_NAME --broadcast --verify"
+    "deploy:deploy": "pnpm run deploy:all --fork-url $CHAIN --account $ACCOUNT --broadcast",
+    "deploy:validate": "pnpm run deploy:all --fork-url $CHAIN ",
+    "deploy:testnet": "DEPLOYER=$TESTNET_DEPLOYER ACCOUNT=$TESTNET_ACCOUNT pnpm deploy:deploy --verify",
+    "deploy:mainnet": "DEPLOYER=$MAINNET_DEPLOYER ACCOUNT=$MAINNET_ACCOUNT pnpm deploy:deploy --verify",
+    "deploy:anvil": "CHAIN=anvil DEPLOYER=$ANVIL_DEPLOYER ACCOUNT=$ANVIL_ACCOUNT pnpm run deploy:deploy",
+    "deploy:sepolia": "CHAIN=sepolia pnpm run deploy:testnet",
+    "deploy:all": "forge script script/DeployAll.s.sol"
   },
   "keywords": [
     "forge",

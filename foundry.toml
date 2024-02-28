@@ -7,7 +7,6 @@ solc = "0.8.19"
 # to write to addresses.json
 fs_permissions = [
   { access = "read-write", path = "./addresses.json" },
-  { access = "read-write", path = "./test/json" },
   { access = "read-write", path = "./out" },
 ]
 
@@ -16,7 +15,7 @@ goerli = "https://goerli.infura.io/v3/${INFURA_API_KEY}"
 sepolia = "https://rpc.ankr.com/eth_sepolia"
 holesky = "https://ethereum-holesky.publicnode.com"
 
-local = "http://127.0.0.1:8545"
+anvil = "http://127.0.0.1:8545"
 
 [etherscan]
 goerli = { key = "${ETHERSCAN_API_KEY_ETHEREUM}" }

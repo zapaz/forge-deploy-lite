@@ -2,107 +2,128 @@
 pragma solidity ^0.8.0;
 
 import "forge-std/Test.sol";
-import "../script/ReadWriteJson.s.sol";
+import "../src/DeployLiteRWJson.s.sol";
 
-contract ReadWriteJsonTest is Test, ReadWriteJson {
+contract ReadWriteJsonTest is Test, DeployLiteRWJson {
     using stdJson for string;
 
     string testFile;
 
-    function setUpJson(string memory name) public {
-        testFile = string.concat("test/json/", name, ".json");
-        setJsonFile(testFile);
-
-        try vm.removeFile(testFile) {} catch (bytes memory) {}
-        vm.writeLine(testFile, string.concat('{\n  "', vm.toString(block.chainid), '": {\n    "Test": ""\n  }\n}'));
-        vm.closeFile(testFile);
-    }
-
-    function setUp() public {}
-
-    function test_OK() public pure {
+    function test_ReadWriteJson_OK() public pure {
         assert(true);
     }
 
-    function test_existsJsonFile() public {
-        setJsonFile("addresses.json");
-        assertTrue(_existsJsonFile());
-    }
-
-    function test_existsNotJsonFile() public {
-        setJsonFile("test/json/json.addresses");
-        assertFalse(_existsJsonFile());
-    }
-
-    function test_createsJsonFile() public {
-        string memory jsonFile = "test/json/test_createsJsonFile.json";
-        setJsonFile(jsonFile);
-
-        if (_existsJsonFile()) vm.removeFile(jsonFile);
-        assertFalse(_existsJsonFile());
-
-        _createJsonFile(block.chainid);
-        assertTrue(_existsJsonFile());
-    }
-
-    function test_existsJsonNetwork() public {
-        setJsonFile("test/json/test_existsJsonNetwork.json");
-        assertTrue(_existsJsonNetwork(block.chainid));
-    }
-
-    function test_existsJsonNetworkNot() public {
-        setJsonFile("test/json/test_existsJsonNetworkNot.json");
-        assertFalse(_existsJsonNetwork(block.chainid));
-    }
-
-    function test_createsJsonNetwork() public {
-        string memory jsonFile = "test/json/test_createsJsonNetwork.json";
-        setJsonFile(jsonFile);
-
-        if (!_existsJsonNetwork(block.chainid)) {
-            _createJsonNetwork(block.chainid);
-            assertTrue(_existsJsonNetwork(block.chainid));
-        }
-    }
-
-    function test_setUpJson() public {
-        setUpJson("test_setUpJson");
-
-        assertEq(jsonFile, testFile);
-        assertEq(readAddress("Test"), address(0x20));
-    }
-
-    function test_SetFilePath() public {
-        string memory otherFile = "../other/other.json";
+    function test_ReadWriteJson_setFilePath() public {
+        string memory otherFile = "otherFile.json";
 
         setJsonFile(otherFile);
-        assertEq(jsonFile, otherFile);
+        assertEq(_jsonFile, otherFile);
     }
 
-    function test_writeAddressExists() public {
-        setUpJson("test_writeAddressExists");
+    function test_ReadWriteJson_readAddressExists() public {
+        setJsonFile("out/test_ReadWriteJson_readAddressExists.json");
+        vm.writeJson(
+            string.concat('{"', vm.toString(block.chainid), '":{"Test":"', vm.toString(address(this)), '"}}'), _jsonFile
+        );
 
-        writeAddress("Test", address(this));
         assertEq(readAddress("Test"), address(this));
+
+        vm.removeFile(_jsonFile);
     }
 
-    function test_writeAddressNotExists() public {
-        setUpJson("test_writeAddressNotExists");
-
-        writeAddress("NoTestHere", address(this));
-        assertEq(readAddress("NoTestHere"), address(this));
-    }
-
-    function test_readAddressExists() public {
-        setUpJson("test_readAddressExists");
-
-        writeAddress("Test", address(this));
-        assertEq(readAddress("Test"), address(this));
-    }
-
-    function test_readAddressNotExists() public {
-        setUpJson("test_readAddressNotExists");
+    function test_ReadWriteJson_readAddressNotExists() public {
+        setJsonFile("out/test_ReadWriteJson_readAddressNotExists.json");
+        vm.writeJson(string.concat('{"', vm.toString(block.chainid), '":{"chainName":"local"}}'), _jsonFile);
 
         assertEq(readAddress("NoTestHere"), address(0));
+
+        vm.removeFile(_jsonFile);
+    }
+
+    function test_ReadWriteJson_readAddressNetworkNotExists() public {
+        setJsonFile("out/test_ReadWriteJson_readAddressNetworkNotExists.json");
+        vm.writeJson(string.concat('{"42":{"Test":"', vm.toString(address(this)), '"}}'), _jsonFile);
+
+        assertEq(readAddress("Test"), address(0));
+
+        vm.removeFile(_jsonFile);
+    }
+
+    function test_ReadWriteJson_readAddressJsonNotExists() public {
+        string memory otherFile = "out/otherZZZ.json";
+
+        setJsonFile(otherFile);
+        assertEq(readAddress("Test"), address(0));
+    }
+
+    function test_ReadWriteJson_writeAddressExists() public {
+        setJsonFile("out/test_ReadWriteJson_writeAddressExists.json");
+        vm.writeJson(
+            string.concat('{"', vm.toString(block.chainid), '":{"Test":"', vm.toString(address(this)), '"}}'), _jsonFile
+        );
+
+        writeAddress("Test", address(42));
+        assertEq(readAddress("Test"), address(42));
+
+        vm.removeFile(_jsonFile);
+    }
+
+    function test_ReadWriteJson_writeAddressNotExists() public {
+        setJsonFile("out/test_ReadWriteJson_writeAddressNotExists.json");
+        vm.writeJson(
+            string.concat('{"', vm.toString(block.chainid), '":{"Test":"', vm.toString(address(this)), '"}}'), _jsonFile
+        );
+
+        writeAddress("NoTestHere", address(42));
+        assertEq(readAddress("NoTestHere"), address(42));
+
+        vm.removeFile(_jsonFile);
+    }
+
+    function test_ReadWriteJson_writeAddressNetworkNotExists() public {
+        setJsonFile("out/test_ReadWriteJson_writeAddressNetworkNotExists.json");
+        vm.writeJson(string.concat('{"42":{"Test":"', vm.toString(address(this)), '"}}'), _jsonFile);
+
+        writeAddress("Test", address(42));
+
+        assertEq(readAddress("Test"), address(42));
+
+        vm.removeFile(_jsonFile);
+    }
+
+    function test_ReadWriteJson_writeAddressJsonNotExists() public {
+        string memory _jsonFile = "out/test_ReadWriteJson_writeAddressJsonNotExists.json";
+        setJsonFile(_jsonFile);
+
+        writeAddress("Test", address(42));
+
+        assertEq(readAddress("Test"), address(42));
+
+        vm.removeFile(_jsonFile);
+    }
+
+    function test_ReadWriteJson_removeAddress() public {
+        setJsonFile("out/test_ReadWriteJson_removeAddress.json");
+        vm.writeJson(
+            string.concat(
+                '{"',
+                vm.toString(block.chainid),
+                '":{"Address1":"',
+                vm.toString(address(makeAddr("Un"))),
+                '","Address2":"',
+                vm.toString(address(makeAddr("Deux"))),
+                '"}}'
+            ),
+            _jsonFile
+        );
+
+
+        writeAddress("Address3", address(makeAddr("Trois")));
+
+        assertEq(readAddress("Address1"), address(makeAddr("Un")));
+        assertEq(readAddress("Address2"), address(makeAddr("Deux")));
+        assertEq(readAddress("Address3"), address(makeAddr("Trois")));
+
+        vm.removeFile(_jsonFile);
     }
 }
