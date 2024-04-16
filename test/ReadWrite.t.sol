@@ -13,11 +13,11 @@ contract ReadWriteJsonTest is Test, DeployLiteRWJson {
         assert(true);
     }
 
-    function test_ReadWrite_Bytes32() public {
+    function test_ReadWrite_Bytes32() public view {
         assertEq(readBytes32("Id32"), 0x1b65ea1a8e546cc3009bce9a1534d01fc5e09f04603be6a067de97db81614970);
     }
 
-    function test_ReadWrite_String() public {
+    function test_ReadWrite_String() public view {
         assertEq(readString("chainName"), "local");
     }
 

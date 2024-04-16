@@ -1,9 +1,12 @@
 {
   "11155111": {
+    "Complex": "0xd9e7ee7120E9E18B04913a241FDf968b94c3430A",
+    "Counter": "0xf1e6c39e6C14535AF3C1EDEF9176311ccEF85fA9",
+    "Immutable": "0x53Af8cD03165CeC2F525A45da0368045AAeE0240",
     "chainName": "sepolia"
   },
   "31337": {
-    "Complex": "0x993F00eb9C73e3E4eAe3d6Afb4Ba65A6b8B5E597",
+    "Complex": "0x1Eb835EB7BEEEE9E6bbFe08F16a2d2eF668204bd",
     "Counter": "0x0116686E2291dbd5e317F47faDBFb43B599786Ef",
     "Id32": "0x1b65ea1a8e546cc3009bce9a1534d01fc5e09f04603be6a067de97db81614970",
     "Immutable": "0x9bAaB117304f7D6517048e371025dB8f89a8DbE5",

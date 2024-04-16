@@ -46,11 +46,11 @@ contract DeployedCodeTest is Test, DeployLite {
         console.log("test_deployedCode_2 ~ imm.code.length:", anotherAddress.code.length);
         console.logBytes(anotherAddress.code);
 
-        assertEq0(address(imm).code, anotherAddress.code);
+        assertEq(address(imm).code, anotherAddress.code);
     }
 
     function test_deployedCode_3() public {
-        vm.skip(true);
+        // vm.skip(true);
 
         vm.setEnv("CHAIN", "anvil");
         vm.createSelectFork("anvil");
@@ -63,6 +63,6 @@ contract DeployedCodeTest is Test, DeployLite {
         console.log("test_deployedCode_3 ~ code.length:", code.length);
         console.logBytes(code);
 
-        assertEq0(address(imm).code, code);
+        assertEq(address(imm).code, code);
     }
 }

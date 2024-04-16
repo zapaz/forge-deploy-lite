@@ -17,12 +17,10 @@ contract DeployLite is Script, IDeployLite, DeployLiteRWJson {
     // immut is to indicate that immutable variables are used, so deployed code depends on
     // these data agurments (or more generraly that deployed code is modify during creation by creation)
     function deployLite(string memory name, bytes memory data, bool immut) public returns (address addr) {
-        vm.startPrank(msg.sender);
         DeployState state = deployState(name, data, immut);
-        vm.stopPrank();
 
         if (state == DeployState.None || state == DeployState.Older) {
-            vm.startBroadcast(msg.sender);
+            vm.startBroadcast();
             deploy(name, data);
             vm.stopBroadcast();
         }
@@ -89,14 +87,6 @@ contract DeployLite is Script, IDeployLite, DeployLiteRWJson {
         }
     }
 
-    function deployState(string memory name, bytes memory data) public returns (DeployState state) {
-        return deployState(name, data, false);
-    }
-
-    function deployState(string memory name) public returns (DeployState state) {
-        return deployState(name, "", false);
-    }
-
     function deploy(string memory name, bytes memory data) public returns (address addr) {
         require(isBroadcasting(), "deploy must be inside Broadcast");
 
@@ -109,10 +99,6 @@ contract DeployLite is Script, IDeployLite, DeployLiteRWJson {
         _state[name] = DeployState.New;
 
         log4(addr, _stringPad20(name), "New deployment", _bytesPad5(addr.code.length));
-    }
-
-    function deploy(string memory name) public returns (address addr) {
-        return deploy(name, "");
     }
 
     function _create(bytes memory bytecode) internal returns (address addr) {

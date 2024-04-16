@@ -1,6 +1,6 @@
 # forge-deploy-lite
 
-DeployLite is a forge script to ease contract deployments on mutliple evm networks
+DeployLite is a forge script to ease contract deployments on mutliple EVM networks
 
 DeployLite registers deployed addresses in a single json file, to be used by your frontend UI
 
@@ -16,27 +16,30 @@ forge install zapaz/forge-deploy-lite
 
 ### configuration
 
-setup your foundry configuration, with specific `fs_permissions` setting,
-here is an example:
-
-`foundry.toml`
+Set specific `fs_permissions` settings in your `foundry.toml` configuration, like this:
 
 ```toml
-[profile.default]
-src = "src"
-out = "out"
-libs = ["lib"]
-
 # to write to addresses.json
 fs_permissions = [
   {  access = "read-write", path = "./addresses.json"},
   {  access = "read-write", path = "./out"}]
-
-[rpc_endpoints]
-sepolia = "https://rpc.ankr.com/eth_sepolia"
 ```
 
-#### script
+### environment
+Set CHAIN, SENDER and ACCOUNT as environment variables, here is [an exemple `.env` file)](.env) for testing with anvil:
+
+```bash
+export CHAIN=anvil
+export SENDER=0x9965507D1a55bcC2695C58ba16FB37d819B0A4dc
+export ACCOUNT=anvil5
+```
+- CHAIN is the name of the chain you are deploying to
+- SENDER the address of this sender of the deployment transactions
+- ACCOUNT is the name of one keystore account holding securely the private key of SENDER
+
+### deployLite script
+
+To keep it simple, only use `deployLite` for your deployment script.
 
 The `Counter` deploy script is as follow, to be writen in a file `DeployCounter.s.sol` :
 
@@ -46,60 +49,118 @@ The `Counter` deploy script is as follow, to be writen in a file `DeployCounter.
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.0;
 
-import {DeployLite} from "lib/forge-deploy-lite/script/DeployLite.s.sol";
-import {Counter} from "src/Counter.sol";
+import {DeployLite} from "lib/forge-deploy-lite/DeployLite.s.sol";
+import {Counter} from "src/examples/Counter.sol";
 
 contract DeployCounter is DeployLite {
-    function deployCounter() public returns (address counter) {
-        vm.startBroadcast();
-
-        counter = address(new Counter());
-
-        // ...
-        // put here additional code to intialize your deployed contract
-
-        // ...
-
-        vm.stopBroadcast();
+    function deployCounter() public returns (address) {
+        return deployLite("Counter", abi.encode(42));
     }
 
     function run() public virtual {
-        deploy("Counter");
+        deployCounter();
     }
 }
 ```
 
-For your contract, just replace everywhere `Counter` by the name of your contract (in imports, text field, and function/contracts/file names).
+For your contract, just replace everywhere `Counter` by the name of your contract.
 
 DeployLite checks onchain if bytecode is already deployed, and then stops if this is the case, or deploys contract and writes deployed address in `adresses.json`
+(you have to make to pass the forge script 2 times to validate that a deployment has succeded, if not some "Contract_last" addresses will appears in your `addresses.json` file)
 
-## deploy
+Latest version of DeployLite handles constructor arguments, immutable variables and ignores metadata
 
-#### simulate contract deployment
-
-To simulate deployment of your contract, launch the following command:
-
-```bash
-forge script script/DeployCounter.s.sol --rpc-url sepolia
+`deployLite` comes in 3 forms:
+- one param when you have no constructor arguments and no immutable variable
+```solidity
+function deployLite(string memory name) external returns (address addr);
 ```
+- two params when you have constructor arguments but no immutable variable
+```solidity
+function deployLite(string memory name, bytes memory data) external returns (address addr);
+```
+- three params when you have immutable variables
+```solidity
+function deployLite(string memory name, bytes memory data, bool immut) external returns (address addr);
+```
+### advanced deploy script
+
+Two more advanced deploy functions are avaible, to tune the deployment process:  `deployState`and `deploy`functions
+
+- `deployState` must be outside `broadcasting`
+- `deploy` must be inside `broadcasting`
+
+Here is an example for `Complex.sol` contract:
+
+```solidity
+// SPDX-License-Identifier: MIT
+pragma solidity ^0.8.0;
+
+import {DeployLite} from "../../src/DeployLite.s.sol";
+import {Complex} from "../../src/examples/Complex.sol";
+
+contract DeployComplex is DeployLite {
+    function deployComplex() public returns (address) {
+        bytes memory args = abi.encode(1_000, 1);
+
+        DeployState state = deployState("Complex", args, true);
+
+        if (state == DeployState.None || state == DeployState.Older) {
+            vm.broadcast();
+            deploy("Complex", args);
+        }
+        return readAddress("Complex");
+    }
+
+    function run() public virtual {
+        deployComplex();
+    }
+}
+
+```
+
+## deployement
+
 
 #### deploy contract
 
 To deploy and verify your contract, launch the following command:
 
 ```bash
-forge script script/DeployCounter.s.sol --rpc-url sepolia --broadcast --verify  --<wallet params>
+forge script script/deploy/DeployCounter.s.sol --fork-url $CHAIN --sender $SENDER --account $ACCOUNT --broadcast --verify
+```
+or via pnpm task
+```bash
+pnpm deploy:broadcast --verify
 ```
 
-#### redeploy same contract
+#### validate contract deployment
 
-By default will not redeploy if bytecode is already deployed.
+To validate deployment of your contract, launch the following command:
 
-But if you have to redeploy contract with same bytecode, but different params, just delete the address manually from `adresses.json` (or move it to some `Counter.old.1` field, to keep history of all addresses)
+```bash
+forge script script/deploy/DeployCounter.s.sol --fork-url $CHAIN --sender $SENDER
+```
+or via pnpm task
+```bash
+pnpm deploy:validate
+```
 
-#### deploy multiple contracts
 
-You can deploy multiple contracts at the same time, in the same block !
+#### deploy and validate contract
+To deploy AND validate your contract, launch the following command:
+
+*This is the recommanded way to deploy!*
+
+```bash
+pnpm deploy:deploy
+```
+It will run `deploy:broadcast` then `deploy:validate`
+
+
+#### multiple contracts deployment
+
+You can deploy multiple contracts at the same time, in the same block
 
 Just write a `Deploy<Contract>.s.sol` for each contract and a `DeployAll.s.sol` script with `run` inluding multiple `deploy("CONTRA${CT_NAME}")`calls like this :
 
@@ -107,23 +168,15 @@ Just write a `Deploy<Contract>.s.sol` for each contract and a `DeployAll.s.sol` 
 contract DeployAll is Contract, Contract2{
     function run() public override(Contract, Contract2)
     {
-        deploy("Contract");
-        deploy("Contract2");
+        deployContract();
+        deployContract2();
     }
 }
 ```
 
-It is recommended to deploy contracts one by one the first time, then you can use `DeployAll` (with same compiler options), as it will only change modified contracts.
+It is recommended to deploy contracts one by one the first time, then you can use `DeployAll` (with same compiler options), as it will only redeploy modified contracts.
 
 ## addresses.json
-
-#### read deployed addresses
-
-```bash
-cat addresses.json
-```
-
-#### example
 
 here is a example of the resulting file:
 
@@ -142,10 +195,16 @@ here is a example of the resulting file:
 }
 ```
 
+Note that you can get some fields like:
+```json
+"Counter_last": "0x34A1D3fff3958843C43aD80F30b94c510645C316"`
+```
+
+In this case, run the validate script to get a validation (`pnpm deploy:validate`) of this deployement.
+Sometimes deployments fails and this `..._last` address is not deployed, in this case just relauch deploy script (`pnpm deploy:broadcast`). No worry to delete this field.
+
 ## todo
 - document howto to also include deploy in tests
-- support immutable variables
-- manage deployment failure... i.e. not writing addresses in this case
 - manage zkSync Era specific deployment
 - ...
 

@@ -45,7 +45,7 @@ contract DeployLiteRWJson is IDeployLiteRWJson, DeployLiteUtils {
         string memory json = _readJsonFile();
         string memory nameKey = string.concat(".", vm.toString(block.chainid), ".", name);
 
-        if (vm.keyExists(json, nameKey)) {
+        if (vm.keyExistsJson(json, nameKey)) {
             bytes memory jsonBytes = vm.parseJson(json, nameKey);
             return abi.decode(jsonBytes, (address));
         }
@@ -57,7 +57,7 @@ contract DeployLiteRWJson is IDeployLiteRWJson, DeployLiteUtils {
         string memory json = _readJsonFile();
         string memory nameKey = string.concat(".", vm.toString(block.chainid), ".", name);
 
-        if (vm.keyExists(json, nameKey)) {
+        if (vm.keyExistsJson(json, nameKey)) {
             bytes memory jsonBytes = vm.parseJson(json, nameKey);
             return abi.decode(jsonBytes, (string));
         }
@@ -71,7 +71,7 @@ contract DeployLiteRWJson is IDeployLiteRWJson, DeployLiteUtils {
         string memory json = _readJsonFile();
         string memory nameKey = string.concat(".", vm.toString(block.chainid), ".", name);
 
-        if (vm.keyExists(json, nameKey)) {
+        if (vm.keyExistsJson(json, nameKey)) {
             bytes memory jsonBytes = vm.parseJson(json, nameKey);
             return abi.decode(jsonBytes, (bytes32));
         }
@@ -103,7 +103,7 @@ contract DeployLiteRWJson is IDeployLiteRWJson, DeployLiteUtils {
         string memory jsonFromFile = _readJsonFile();
         vm.serializeJson("root", jsonFromFile);
 
-        if (vm.keyExists(jsonFromFile, nameKey)) {
+        if (vm.keyExistsJson(jsonFromFile, nameKey)) {
             string memory jsonNetwork = _jsonToObject(jsonFromFile, networkKey, name, true);
             vm.writeJson(jsonNetwork, _jsonFile, networkKey);
         }
@@ -125,8 +125,8 @@ contract DeployLiteRWJson is IDeployLiteRWJson, DeployLiteUtils {
 
         vm.serializeJson("root", jsonFromFile);
 
-        if (vm.keyExists(jsonFromFile, networkKey)) {
-            if (vm.keyExists(jsonFromFile, nameKey)) {
+        if (vm.keyExistsJson(jsonFromFile, networkKey)) {
+            if (vm.keyExistsJson(jsonFromFile, nameKey)) {
                 vm.writeJson(vm.toString(addr), _jsonFile, nameKey);
             } else {
                 _jsonToObject(jsonFromFile, networkKey, name, false);
