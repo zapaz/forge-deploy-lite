@@ -10,7 +10,7 @@ contract DeployComplex is DeployLite {
     function deployComplex() public returns (address) {
         bytes memory args = abi.encode(1_000, 1);
 
-        DeployState state = deployState("Complex", args, true);
+        DeployState state = deployState("Complex", args);
 
         if (state == DeployState.None || state == DeployState.Older) {
             vm.broadcast();

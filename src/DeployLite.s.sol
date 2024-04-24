@@ -12,36 +12,26 @@ contract DeployLite is Script, IDeployLite, DeployLiteRWJson {
     mapping(string => DeployState) private _state;
     mapping(string => bool) private _created;
 
-    // deployLite deploy named contract if not yet deployed or already deployed with different code
-    // data contains constructor arguments abi.encoded
-    // immut is to indicate that immutable variables are used, so deployed code depends on
-    // these data agurments (or more generraly that deployed code is modify during creation by creation)
-    function deployLite(string memory name, bytes memory data, bool immut) public returns (address addr) {
-        DeployState state = deployState(name, data, immut);
-
-        if (state == DeployState.None || state == DeployState.Older) {
-            vm.startBroadcast();
-            deploy(name, data);
-            vm.stopBroadcast();
-        }
-
-        return readAddress(name);
-    }
-
-    // simple deploy with args no immutable
     function deployLite(string memory name, bytes memory data) public returns (address addr) {
-        return deployLite(name, data, false);
+        return _deploy(name, data, false);
     }
 
-    // simple deploy
-    function deployLite(string memory name) public returns (address addr) {
-        return deployLite(name, "", false);
+    function deployLiteImmutable(string memory name, bytes memory data) public returns (address addr) {
+        return _deploy(name, data, true);
+    }
+
+    function deployState(string memory name) public returns (DeployState state) {
+        return _deployState(name, "", false);
+    }
+
+    function deployState(string memory name, bytes memory data) public returns (DeployState state) {
+        return _deployState(name, data, true);
     }
 
     // read deployed state of contract (compares to next deploy code) :
     // none deployed, older deployed (different), already deployed (identical), new (just deployed)
     // if immut, caller has to prank sender user, when msg.sender is checked inside constructor
-    function deployState(string memory name, bytes memory data, bool immut) public returns (DeployState state) {
+    function _deployState(string memory name, bytes memory data, bool immut) private returns (DeployState state) {
         string memory nameLast = string.concat(name, _LAST);
         address addrName = _readAddress(name);
         address addrNameLast = _readAddress(nameLast);
@@ -85,6 +75,22 @@ contract DeployLite is Script, IDeployLite, DeployLiteRWJson {
             _state[name] = state;
             log4(addr, _stringPad20(name), deployedLabel, _bytesPad5(addr.code.length));
         }
+    }
+
+    // deployLite deploy named contract if not yet deployed or already deployed with different code
+    // data contains constructor arguments abi.encoded
+    // immut is to indicate that immutable variables are used, so deployed code depends on
+    // these data agurments (or more generraly that deployed code is modify during creation by creation)
+    function _deploy(string memory name, bytes memory data, bool immut) internal returns (address addr) {
+        DeployState state = _deployState(name, data, immut);
+
+        if (state == DeployState.None || state == DeployState.Older) {
+            vm.startBroadcast();
+            deploy(name, data);
+            vm.stopBroadcast();
+        }
+
+        return readAddress(name);
     }
 
     function deploy(string memory name, bytes memory data) public returns (address addr) {
