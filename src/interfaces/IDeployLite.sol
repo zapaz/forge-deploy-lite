@@ -10,6 +10,7 @@ interface IDeployLite {
         Older
     }
 
+    function deployLite(string memory name) external returns (address addr);
     function deployLite(string memory name, bytes memory data) external returns (address addr);
     function deployLiteImmutable(string memory name, bytes memory data) external returns (address addr);
 

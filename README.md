@@ -81,7 +81,7 @@ function deployLite(string memory name, bytes memory data) external returns (add
 ```
 - three params when you have immutable variables
 ```solidity
-function deployLite(string memory name, bytes memory data, bool immut) external returns (address addr);
+function deployLiteImmutable(string memory name, bytes memory data, bool immut) external returns (address addr);
 ```
 ### advanced deploy script
 

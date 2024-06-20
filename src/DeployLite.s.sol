@@ -12,6 +12,10 @@ contract DeployLite is Script, IDeployLite, DeployLiteRWJson {
     mapping(string => DeployState) private _state;
     mapping(string => bool) private _created;
 
+    function deployLite(string memory name) public returns (address addr) {
+        return _deploy(name, "", false);
+    }
+
     function deployLite(string memory name, bytes memory data) public returns (address addr) {
         return _deploy(name, data, false);
     }
