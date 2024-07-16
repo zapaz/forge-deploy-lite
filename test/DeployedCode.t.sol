@@ -6,7 +6,7 @@ import {Immutable} from "../src/examples/Immutable.sol";
 import {DeployLite} from "../src/DeployLite.s.sol";
 
 contract DeployedCodeTest is Test, DeployLite {
-    function setUp() public view {
+    function setUp() public pure {
         console.log("setUp");
     }
 

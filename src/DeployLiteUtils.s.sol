@@ -6,13 +6,13 @@ import "forge-std/Script.sol";
 import {IDeployLiteUtils} from "./interfaces/IDeployLiteUtils.sol";
 
 contract DeployLiteUtils is IDeployLiteUtils, Script {
-    function log3(address addr, string memory name, string memory description) public view override(IDeployLiteUtils) {
+    function log3(address addr, string memory name, string memory description) public pure override(IDeployLiteUtils) {
         log4(addr, name, description, "");
     }
 
     function log4(address addr, string memory name, string memory description, string memory more)
         public
-        view
+        pure
         override(IDeployLiteUtils)
     {
         console.log(addr, _stringPad20(name), _stringPad20(description), _stringPad20(more));
