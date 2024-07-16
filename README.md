@@ -4,6 +4,14 @@ DeployLite is a forge script to ease contract deployments on mutliple EVM networ
 
 DeployLite registers deployed addresses in a single json file, to be used by your frontend UI
 
+## features
+- **Idempotent Deployments**: DeployLite ensures that a contract is deployed only if it is not already deployed onchain
+- **Immutable Variable Handling**: DeployLite identifies contracts by their on-chain bytecode, even when immutable variables are present
+- **Metadata Management**: DeployLite avoids redeploying contracts if only metadata (such as formatting or comments) has changed, without any code modifications
+- **Multi-Contract Support**: DeployLite supports the deployment of multiple contracts in a single operation
+
+You can use a unique `DeployAll.s.sol` script to deploy all your contracts, ensuring only modified contracts to be redeployed.
+
 ## setup
 
 ### install
@@ -26,16 +34,26 @@ fs_permissions = [
 ```
 
 ### environment
-Set CHAIN, SENDER and ACCOUNT as environment variables, here is [an exemple `.env` file)](.env) for testing with anvil:
+Set environment variables, to be used in `foundry.toml`
+- INFURA_API_KEY (or ALCHEMY_API_KEY or other...) for your rpc url
+- ETHERSCAN_API_KEY_ETHEREUM (or other...) to verify your contract
 
-```bash
-export CHAIN=anvil
-export SENDER=0x9965507D1a55bcC2695C58ba16FB37d819B0A4dc
-export ACCOUNT=anvil5
-```
+to be used by `deploy scripts`:
 - CHAIN is the name of the chain you are deploying to
 - SENDER the address of this sender of the deployment transactions
 - ACCOUNT is the name of one keystore account holding securely the private key of SENDER
+
+
+Here is an [example `.env`](.env.anvil) file for testing with anvil:
+
+```bash
+export INFURA_API_KEY="xxxxxxxxxxxxx"
+export ETHERSCAN_API_KEY_ETHEREUM="xxxxxxxxxxxxx"
+
+export CHAIN="anvil"
+export SENDER="0x9965507D1a55bcC2695C58ba16FB37d819B0A4dc"
+export ACCOUNT="anvil5"
+```
 
 ### deployLite script
 
@@ -66,11 +84,10 @@ contract DeployCounter is DeployLite {
 For your contract, just replace everywhere `Counter` by the name of your contract.
 
 DeployLite checks onchain if bytecode is already deployed, and then stops if this is the case, or deploys contract and writes deployed address in `adresses.json`
-(you have to make to pass the forge script 2 times to validate that a deployment has succeded, if not some "Contract_last" addresses will appears in your `addresses.json` file)
+(you have to pass the forge script 2 times to validate that a deployment has succeeded, if not some "Contract_last" addresses will appears in your `addresses.json` file)
 
-Latest version of DeployLite handles constructor arguments, immutable variables and ignores metadata
+`deployLite` comes in 3 flavors to optionnaly handle constructor argument and immutable variables=
 
-`deployLite` comes in 3 forms:
 - one param when you have no constructor arguments and no immutable variable
 ```solidity
 function deployLite(string memory name) external returns (address addr);
@@ -87,8 +104,20 @@ function deployLiteImmutable(string memory name, bytes memory data, bool immut) 
 
 Two more advanced deploy functions are avaible, to tune the deployment process:  `deployState`and `deploy`functions
 
-- `deployState` must be outside `broadcasting`
-- `deploy` must be inside `broadcasting`
+- `deployState` return the actual state of deployment (must be outside `broadcasting`)
+  - possible values are :
+    - Null: deployment not checked yet
+    - None: no deployment found
+    - New: new deployment has just been made
+    - Already: existing identic deployment exists, no need to redeploy
+    - Older: a older different deployment exists, redeploy needed
+```solidity
+function deployState(string memory name) public returns (DeployState state)
+```
+- `deploy` actually deploys data bytecode for named contract (must be inside `broadcasting`)
+```solidity
+function deploy(string memory name, bytes memory data) external returns (address addr);
+```
 
 Here is an example for `Complex.sol` contract:
 
@@ -150,8 +179,6 @@ pnpm deploy:validate
 #### deploy and validate contract
 To deploy AND validate your contract, launch the following command:
 
-*This is the recommanded way to deploy!*
-
 ```bash
 pnpm deploy:deploy
 ```
@@ -201,7 +228,7 @@ Note that you can get some fields like:
 ```
 
 In this case, run the validate script to get a validation (`pnpm deploy:validate`) of this deployement.
-Sometimes deployments fails and this `..._last` address is not deployed, in this case just relauch deploy script (`pnpm deploy:broadcast`). No worry to delete this field.
+Sometimes deployments fails and this `..._last` address is not deployed, in this case just relaunch deploy script (`pnpm deploy:broadcast`). No worry to delete this field.
 
 ## todo
 - document howto to also include deploy in tests
@@ -212,5 +239,5 @@ Any suggestions welcome! (just open an issue or a PR)
 
 ## aknowledgement
 
-- inspired by @wighawag great [hardhat-deploy](https://github.com/wighawag/hardhat-deploy)
-- a brand new forge version [forge-deploy](https://github.com/wighawag/forge-deploy) also available with full deploy functionnalies
+- inspired by [@wighawag](https://github.com/wighawag) great [hardhat-deploy](https://github.com/wighawag/hardhat-deploy)
+- a forge version by [@wighawag](https://github.com/wighawag) also available [forge-deploy](https://github.com/wighawag/forge-deploy)  with full deploy functionnalies
