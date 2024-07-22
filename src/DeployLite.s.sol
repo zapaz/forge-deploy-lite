@@ -13,29 +13,25 @@ contract DeployLite is Script, IDeployLite, DeployLiteRWJson {
     mapping(string => bool) private _created;
 
     function deployLite(string memory name) public returns (address addr) {
-        return _deploy(name, "", false);
+        return _deploy(name, "");
     }
 
     function deployLite(string memory name, bytes memory data) public returns (address addr) {
-        return _deploy(name, data, false);
-    }
-
-    function deployLiteImmutable(string memory name, bytes memory data) public returns (address addr) {
-        return _deploy(name, data, true);
+        return _deploy(name, data);
     }
 
     function deployState(string memory name) public returns (DeployState state) {
-        return _deployState(name, "", false);
+        return _deployState(name, "");
     }
 
     function deployState(string memory name, bytes memory data) public returns (DeployState state) {
-        return _deployState(name, data, true);
+        return _deployState(name, data);
     }
 
     // read deployed state of contract (compares to next deploy code) :
     // none deployed, older deployed (different), already deployed (identical), new (just deployed)
     // if immut, caller has to prank sender user, when msg.sender is checked inside constructor
-    function _deployState(string memory name, bytes memory data, bool immut) private returns (DeployState state) {
+    function _deployState(string memory name, bytes memory data) private returns (DeployState state) {
         string memory nameLast = string.concat(name, _LAST);
         address addrName = _readAddress(name);
         address addrNameLast = _readAddress(nameLast);
@@ -43,11 +39,7 @@ contract DeployLite is Script, IDeployLite, DeployLiteRWJson {
         address addr;
 
         bytes memory deployedCodeExpected;
-        if (immut) {
-            deployedCodeExpected = _getDeployedCodeExpected(name, data);
-        } else {
-            deployedCodeExpected = _getDeployedCodeExpected(name);
-        }
+        deployedCodeExpected = _getDeployedCodeExpected(name, data);
         DeployState stateBefore = _state[name];
 
         if (_isSameCode(deployedCodeExpected, addrNameLast.code)) {
@@ -85,8 +77,8 @@ contract DeployLite is Script, IDeployLite, DeployLiteRWJson {
     // data contains constructor arguments abi.encoded
     // immut is to indicate that immutable variables are used, so deployed code depends on
     // these data agurments (or more generraly that deployed code is modify during creation by creation)
-    function _deploy(string memory name, bytes memory data, bool immut) internal returns (address addr) {
-        DeployState state = _deployState(name, data, immut);
+    function _deploy(string memory name, bytes memory data) internal returns (address addr) {
+        DeployState state = _deployState(name, data);
 
         if (state == DeployState.None || state == DeployState.Older) {
             vm.startBroadcast();

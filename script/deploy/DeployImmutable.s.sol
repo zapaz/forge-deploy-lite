@@ -6,7 +6,7 @@ import {Immutable} from "../../src/examples/Immutable.sol";
 
 contract DeployImmutable is DeployLite {
     function deployImmutable() public returns (address) {
-        return deployLiteImmutable("Immutable", abi.encode(41, 3));
+        return deployLite("Immutable", abi.encode(41, 3));
     }
 
     function run() public virtual {
