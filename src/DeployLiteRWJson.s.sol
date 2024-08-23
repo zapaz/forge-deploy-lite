@@ -3,6 +3,7 @@ pragma solidity ^0.8.0;
 
 import {IDeployLiteRWJson} from "./interfaces/IDeployLiteRWJson.sol";
 import {DeployLiteUtils} from "./DeployLiteUtils.s.sol";
+// import {console} from "forge-std/console.sol";
 
 // Read and Write json file of this format
 // {
@@ -24,20 +25,22 @@ contract DeployLiteRWJson is IDeployLiteRWJson, DeployLiteUtils {
 
     bool internal _recording = true;
 
-    function setJsonFile(string memory jsonFile_) public {
+    function setJsonFile(string memory jsonFile_) public override(IDeployLiteRWJson) {
         _jsonFile = jsonFile_;
     }
 
-    function setRecording(bool recording_) public {
+    function setRecording(bool recording_) public override(IDeployLiteRWJson) {
         _recording = recording_;
     }
 
-    function readAddress(string memory name) public view returns (address addr) {
+    // read `name_LAST` or `name` as Address
+    function readAddress(string memory name) public view override(IDeployLiteRWJson) returns (address addr) {
         addr = _readAddress(string.concat(name, _LAST));
         if (addr == address(0)) addr = _readAddress(name);
     }
 
-    function _readAddress(string memory name) public view returns (address addr) {
+    // read `name` as Address
+    function _readAddress(string memory name) internal view returns (address addr) {
         require(bytes(name).length > 0, "No name");
 
         if ((addr = _addresses[name]) != address(0)) return addr;
@@ -51,47 +54,45 @@ contract DeployLiteRWJson is IDeployLiteRWJson, DeployLiteUtils {
         }
     }
 
-    function readString(string memory name) public view returns (string memory) {
+    // read `name` as Bytes
+    function readBytes(string memory name) public view override(IDeployLiteRWJson) returns (bytes memory jsonBytes) {
         require(bytes(name).length > 0, "No name");
 
         string memory json = _readJsonFile();
         string memory nameKey = string.concat(".", vm.toString(block.chainid), ".", name);
 
         if (vm.keyExistsJson(json, nameKey)) {
-            bytes memory jsonBytes = vm.parseJson(json, nameKey);
-            return abi.decode(jsonBytes, (string));
-        }
-
-        return "";
-    }
-
-    function readBytes32(string memory name) public view returns (bytes32) {
-        require(bytes(name).length > 0, "No name");
-
-        string memory json = _readJsonFile();
-        string memory nameKey = string.concat(".", vm.toString(block.chainid), ".", name);
-
-        if (vm.keyExistsJson(json, nameKey)) {
-            bytes memory jsonBytes = vm.parseJson(json, nameKey);
-            return abi.decode(jsonBytes, (bytes32));
-        }
-
-        return "";
-    }
-
-    function getAddress(string memory name) public returns (address addr) {
-        addr = readAddress(name);
-
-        if (addr == address(0)) {
-            addr = makeAddr(name);
-            writeAddress(name, addr);
-            log4(addr, name, "New EOA", "");
-        } else {
-            log4(addr, name, "Existing", "");
+            jsonBytes = vm.parseJson(json, nameKey);
         }
     }
 
-    function removeAddress(string memory name) public {
+    // read `name` as String
+    function readString(string memory name)
+        public
+        view
+        override(IDeployLiteRWJson)
+        returns (string memory jsonString)
+    {
+        bytes memory jsonBytes = readBytes(name);
+        jsonString = abi.decode(jsonBytes, (string));
+    }
+
+    // read `name` as Bytes32
+    function readBytes32(string memory name) public view override(IDeployLiteRWJson) returns (bytes32 jsonBytes32) {
+        bytes memory jsonBytes = readBytes(name);
+        jsonBytes32 = abi.decode(jsonBytes, (bytes32));
+    }
+
+    // read `name` as Uint
+    function readUint(string memory name) public view override(IDeployLiteRWJson) returns (uint256) {
+        bytes memory jsonBytes = readBytes(name);
+        if (jsonBytes.length == 0) return 0;
+
+        string memory jsonString = abi.decode(jsonBytes, (string));
+        return _stringToUint(jsonString);
+    }
+
+    function removeAddress(string memory name) public override(IDeployLiteRWJson) {
         require(bytes(name).length > 0, "No name");
 
         // remove address to file only when recording
@@ -104,12 +105,12 @@ contract DeployLiteRWJson is IDeployLiteRWJson, DeployLiteUtils {
         vm.serializeJson("root", jsonFromFile);
 
         if (vm.keyExistsJson(jsonFromFile, nameKey)) {
-            string memory jsonNetwork = _jsonToObject(jsonFromFile, networkKey, name, true);
-            vm.writeJson(jsonNetwork, _jsonFile, networkKey);
+            string memory json = _keyDelete(jsonFromFile, networkKey, name);
+            vm.writeJson(json, _jsonFile, networkKey);
         }
     }
 
-    function writeAddress(string memory name, address addr) public {
+    function writeAddress(string memory name, address addr) public override(IDeployLiteRWJson) {
         require(bytes(name).length > 0, "No name");
 
         _addresses[name] = addr;
@@ -129,10 +130,8 @@ contract DeployLiteRWJson is IDeployLiteRWJson, DeployLiteUtils {
             if (vm.keyExistsJson(jsonFromFile, nameKey)) {
                 vm.writeJson(vm.toString(addr), _jsonFile, nameKey);
             } else {
-                _jsonToObject(jsonFromFile, networkKey, name, false);
-
-                jsonNetwork = vm.serializeAddress(string.concat(networkKey, name), name, addr);
-                vm.writeJson(jsonNetwork, _jsonFile, networkKey);
+                _keyUpdate(jsonFromFile, networkKey, name, vm.toString(addr));
+                vm.writeJson(jsonFromFile, _jsonFile);
             }
         } else {
             vm.serializeString("network", "chainName", "");
@@ -142,36 +141,37 @@ contract DeployLiteRWJson is IDeployLiteRWJson, DeployLiteUtils {
         }
     }
 
-    function _jsonToObject(string memory json, string memory objectKey, string memory name, bool remove)
+    function _keyDelete(string memory jsonIn, string memory keyPath, string memory name)
         internal
-        returns (string memory jsonObject)
+        returns (string memory jsonOut)
     {
-        string[] memory keys = vm.parseJsonKeys(json, objectKey);
-        string memory randomKey = string.concat(objectKey, name);
+        string memory jsonPath;
+        string[] memory names = vm.parseJsonKeys(jsonIn, string.concat(".", keyPath));
 
-        for (uint256 i = 0; i < keys.length; i++) {
-            string memory keyName = keys[i];
-            if (remove && keccak256(abi.encode(keyName)) == keccak256(abi.encode(name))) continue;
+        for (uint256 i = 0; i < names.length; i++) {
+            if (keccak256(abi.encode(names[i])) == keccak256(abi.encode(name))) continue;
 
-            bytes memory jsonBytes = vm.parseJson(json, string.concat(objectKey, ".", keyName));
-
-            if (jsonBytes.length == 32) {
-                // value can be address or bytes32
-                if (uint256(bytes32(jsonBytes)) < (1 << 160)) {
-                    // value maybe address
-                    address addressValue = abi.decode(jsonBytes, (address));
-                    jsonObject = vm.serializeAddress(randomKey, keyName, addressValue);
-                } else {
-                    // value maybe bytes32
-                    bytes32 bytes32Value = abi.decode(jsonBytes, (bytes32));
-                    jsonObject = vm.serializeBytes32(randomKey, keyName, bytes32Value);
-                }
-            } else {
-                // value maybe string
-                string memory stringValue = abi.decode(jsonBytes, (string));
-                jsonObject = vm.serializeString(randomKey, keyName, stringValue);
-            }
+            string memory keyName = string.concat(".", keyPath, ".", names[i]);
+            string memory jsonString = vm.parseJsonString(jsonIn, keyName);
+            jsonPath = vm.serializeString("pathKey", names[i], jsonString);
         }
+        jsonOut = vm.serializeString("pathOut", keyPath, jsonPath);
+    }
+
+    function _keyUpdate(string memory jsonIn, string memory keyPath, string memory name, string memory value)
+        internal
+        returns (string memory jsonOut)
+    {
+        string memory jsonPath;
+        string[] memory names = vm.parseJsonKeys(jsonIn, string.concat(".", keyPath));
+
+        for (uint256 i = 0; i < names.length; i++) {
+            string memory keyName = string.concat(".", keyPath, ".", names[i]);
+            string memory jsonString = vm.parseJsonString(jsonIn, keyName);
+            jsonPath = vm.serializeString("pathKey", names[i], jsonString);
+        }
+        jsonPath = vm.serializeString("pathKey", name, value);
+        jsonOut = vm.serializeString("pathOut", keyPath, jsonPath);
     }
 
     function _readJsonFile() internal view returns (string memory) {

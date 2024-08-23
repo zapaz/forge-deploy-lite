@@ -6,6 +6,7 @@ solc = "0.8.19"
 
 # to write to addresses.json
 fs_permissions = [
+  { access = "read-write", path = "./test/files" },
   { access = "read-write", path = "./addresses.json" },
   { access = "read-write", path = "./out" },
 ]

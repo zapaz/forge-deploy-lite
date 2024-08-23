@@ -44,6 +44,15 @@ contract DeployLiteUtils is IDeployLiteUtils, Script {
         return bytes(data[start:end]);
     }
 
+    function sliceString(string calldata data, uint256 start, uint256 end)
+        public
+        pure
+        override(IDeployLiteUtils)
+        returns (string memory)
+    {
+        return string(sliceBytes(bytes(data), start, end));
+    }
+
     function _bytesPad5(uint256 n) internal pure returns (string memory) {
         require(n <= 24_576, "Too big Dragon");
         bytes memory b = new bytes(5);
@@ -65,6 +74,17 @@ contract DeployLiteUtils is IDeployLiteUtils, Script {
             str = abi.encodePacked(str, " ");
         }
         output = string(str);
+    }
+
+    function _stringToUint(string memory str) internal pure returns (uint256 result) {
+        bytes memory b = bytes(str);
+        uint256 len = b.length;
+        for (uint256 i = 0; i < len; i++) {
+            uint256 c = uint256(uint8(b[i]));
+            if (c >= 48 && c <= 57) {
+                result = result * 10 + (c - 48);
+            }
+        }
     }
 
     function _getCallerModeName(uint256 callerMode) internal pure returns (string memory) {
