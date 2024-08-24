@@ -13,9 +13,10 @@ import {DeployLiteUtils} from "./DeployLiteUtils.s.sol";
 //   },
 //   "11155111": {
 //     "chainName": "sepolia",
-//     "Counter": "0x34A1D3fff3958843C43aD80F30b94c510645C316"
+//     "Counter_last": "0x34A1D3fff3958843C43aD80F30b94c510645C316"
 //   }
 // }
+
 contract DeployLiteRWJson is IDeployLiteRWJson, DeployLiteUtils {
     string constant _LAST = "_last";
 
@@ -33,54 +34,52 @@ contract DeployLiteRWJson is IDeployLiteRWJson, DeployLiteUtils {
         _recording = recording_;
     }
 
-    // read `name_LAST` or `name` as Address
-    function readAddress(string memory name) public view override(IDeployLiteRWJson) returns (address addr) {
-        addr = _readAddress(string.concat(name, _LAST));
-        if (addr == address(0)) addr = _readAddress(name);
+    // read `name` as Bytes
+    function readBytes(string memory name) public view override(IDeployLiteRWJson) returns (bytes memory) {
+        require(bytes(name).length > 0, "No name");
+
+        string memory json = _readJsonFile();
+        string memory nameKey = string.concat(".", vm.toString(block.chainid), ".", name);
+
+        if (vm.keyExistsJson(json, nameKey)) {
+            return vm.parseJson(json, nameKey);
+        }
+
+        return "";
     }
 
     // read `name` as Address
-    function _readAddress(string memory name) internal view returns (address addr) {
-        require(bytes(name).length > 0, "No name");
+    function _readAddress(string memory name) internal view returns (address) {
+        if (_addresses[name] != address(0)) return _addresses[name];
 
-        if ((addr = _addresses[name]) != address(0)) return addr;
+        bytes memory jsonBytes = readBytes(name);
+        if (jsonBytes.length == 0) return address(0);
 
-        string memory json = _readJsonFile();
-        string memory nameKey = string.concat(".", vm.toString(block.chainid), ".", name);
-
-        if (vm.keyExistsJson(json, nameKey)) {
-            bytes memory jsonBytes = vm.parseJson(json, nameKey);
-            return abi.decode(jsonBytes, (address));
-        }
+        return abi.decode(jsonBytes, (address));
     }
 
-    // read `name` as Bytes
-    function readBytes(string memory name) public view override(IDeployLiteRWJson) returns (bytes memory jsonBytes) {
-        require(bytes(name).length > 0, "No name");
+    // read `name_LAST` or `name` as Address
+    function readAddress(string memory name) public view override(IDeployLiteRWJson) returns (address) {
+        address addr = _readAddress(string.concat(name, _LAST));
+        if (addr != address(0)) return addr;
 
-        string memory json = _readJsonFile();
-        string memory nameKey = string.concat(".", vm.toString(block.chainid), ".", name);
-
-        if (vm.keyExistsJson(json, nameKey)) {
-            jsonBytes = vm.parseJson(json, nameKey);
-        }
+        return _readAddress(name);
     }
 
     // read `name` as String
-    function readString(string memory name)
-        public
-        view
-        override(IDeployLiteRWJson)
-        returns (string memory jsonString)
-    {
+    function readString(string memory name) public view override(IDeployLiteRWJson) returns (string memory) {
         bytes memory jsonBytes = readBytes(name);
-        jsonString = abi.decode(jsonBytes, (string));
+        if (jsonBytes.length == 0) return "";
+
+        return abi.decode(jsonBytes, (string));
     }
 
     // read `name` as Bytes32
-    function readBytes32(string memory name) public view override(IDeployLiteRWJson) returns (bytes32 jsonBytes32) {
+    function readBytes32(string memory name) public view override(IDeployLiteRWJson) returns (bytes32) {
         bytes memory jsonBytes = readBytes(name);
-        jsonBytes32 = abi.decode(jsonBytes, (bytes32));
+        if (jsonBytes.length == 0) return bytes32(0);
+
+        return abi.decode(jsonBytes, (bytes32));
     }
 
     // read `name` as Uint
@@ -143,7 +142,7 @@ contract DeployLiteRWJson is IDeployLiteRWJson, DeployLiteUtils {
 
     function _keyDelete(string memory jsonIn, string memory keyPath, string memory name)
         internal
-        returns (string memory jsonOut)
+        returns (string memory)
     {
         string memory jsonPath;
         string[] memory names = vm.parseJsonKeys(jsonIn, string.concat(".", keyPath));
@@ -155,12 +154,12 @@ contract DeployLiteRWJson is IDeployLiteRWJson, DeployLiteUtils {
             string memory jsonString = vm.parseJsonString(jsonIn, keyName);
             jsonPath = vm.serializeString("pathKey", names[i], jsonString);
         }
-        jsonOut = vm.serializeString("pathOut", keyPath, jsonPath);
+        return vm.serializeString("pathOut", keyPath, jsonPath);
     }
 
     function _keyUpdate(string memory jsonIn, string memory keyPath, string memory name, string memory value)
         internal
-        returns (string memory jsonOut)
+        returns (string memory)
     {
         string memory jsonPath;
         string[] memory names = vm.parseJsonKeys(jsonIn, string.concat(".", keyPath));
@@ -171,7 +170,7 @@ contract DeployLiteRWJson is IDeployLiteRWJson, DeployLiteUtils {
             jsonPath = vm.serializeString("pathKey", names[i], jsonString);
         }
         jsonPath = vm.serializeString("pathKey", name, value);
-        jsonOut = vm.serializeString("pathOut", keyPath, jsonPath);
+        return vm.serializeString("pathOut", keyPath, jsonPath);
     }
 
     function _readJsonFile() internal view returns (string memory) {

@@ -80,7 +80,7 @@ contract ReadWritePlusTest is Test, DeployLite {
         assertEq(names[1], "chainName");
         assertEq(names[2], "num");
 
-        assertEq(readAddress("Router") , oldAddress);
+        assertEq(readAddress("Router"), oldAddress);
         assertEq(readString("chainName"), "local");
         assertEq(readUint("num"), 324);
     }
