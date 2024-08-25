@@ -34,12 +34,14 @@ contract ReadWritePlusTest is Test, DeployLite {
         console.log(json);
         assert(readAddress("Router") == oldAddress);
 
-        json = _keyDelete(json, "31337", "Router");
-        json.write(pathJson);
+        string memory jsonNetwork = _keyDelete(json, "Router");
+        jsonNetwork.write(pathJson, ".31337");
 
         json = vm.readFile(pathJson);
         console.log(json);
         assert(readAddress("Router") == address(0));
+
+        check(address(0));
     }
 
     function test_ReadWritePlus_KeyInsert() public {
@@ -47,16 +49,18 @@ contract ReadWritePlusTest is Test, DeployLite {
         console.log(json);
         assert(readAddress("Router2") == address(0));
 
-        json = _keyUpdate(json, "31337", "Router2", vm.toString(newAddress));
-        json.write(pathJson);
+        string memory jsonNetwork = _keyInsert(json, "Router2", newAddress);
+        jsonNetwork.write(pathJson, ".31337");
 
         json = vm.readFile(pathJson);
         console.log(json);
         assert(readAddress("Router2") == newAddress);
+
+        check(oldAddress);
     }
 
-    function test_ReadWritePlus_KeyUpdate() public {
-        init("KeyUpdate");
+    function test_ReadWritePlus_KeyWrite() public {
+        init("KeyWrite");
 
         console.log(json);
         assert(readAddress("Router") == oldAddress);
@@ -67,22 +71,14 @@ contract ReadWritePlusTest is Test, DeployLite {
 
         console.log(json);
         assert(readAddress("Router") == newAddress);
+
+        check(newAddress);
     }
 
     function test_ReadWritePlus_OK() public {
         init("OK");
 
-        string[] memory keys = vm.parseJsonKeys(json, "$");
-        assertEq(keys[0], "31337");
-
-        string[] memory names = vm.parseJsonKeys(json, ".31337");
-        assertEq(names[0], "Router");
-        assertEq(names[1], "chainName");
-        assertEq(names[2], "num");
-
-        assertEq(readAddress("Router"), oldAddress);
-        assertEq(readString("chainName"), "local");
-        assertEq(readUint("num"), 324);
+        check(oldAddress);
     }
 
     function name4bytes() public pure returns (string memory) {
@@ -95,6 +91,8 @@ contract ReadWritePlusTest is Test, DeployLite {
 
         vm.serializeString("network", "chainName", "local");
         vm.serializeString("network", "num", "324");
+        vm.serializeString("network", "Id32", "0x1b65ea1a8e546cc3009bce9a1534d01fc5e09f04603be6a067de97db81614970");
+
         string memory jsonNetwork = vm.serializeAddress("network", "Router", oldAddress);
 
         json = vm.serializeString("root", "31337", jsonNetwork);
@@ -102,5 +100,14 @@ contract ReadWritePlusTest is Test, DeployLite {
         json = vm.readFile(pathJson);
 
         setJsonFile(pathJson);
+    }
+
+    function check(address addr) public view {
+        string[] memory keys = vm.parseJsonKeys(json, "$");
+        assertEq(keys[0], "31337");
+
+        assertEq(readAddress("Router"), addr);
+        assertEq(readString("chainName"), "local");
+        assertEq(readUint("num"), 324);
     }
 }
