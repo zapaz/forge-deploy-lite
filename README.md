@@ -86,19 +86,15 @@ For your contract, just replace everywhere `Counter` by the name of your contrac
 DeployLite checks onchain if bytecode is already deployed, and then stops if this is the case, or deploys contract and writes deployed address in `adresses.json`
 (you have to pass the forge script 2 times to validate that a deployment has succeeded, if not some "Contract_last" addresses will appears in your `addresses.json` file)
 
-`deployLite` comes in 3 flavors to optionnaly handle constructor argument and immutable variables=
+`deployLite` comes in 2 flavors to optionnaly handle constructor argument
 
-- one param when you have no constructor arguments and no immutable variable
+- one param when you have no constructor arguments
 ```solidity
 function deployLite(string memory name) external returns (address addr);
 ```
-- two params when you have constructor arguments but no immutable variable
+- two params when you have constructor arguments
 ```solidity
 function deployLite(string memory name, bytes memory data) external returns (address addr);
-```
-- three params when you have immutable variables
-```solidity
-function deployLiteImmutable(string memory name, bytes memory data, bool immut) external returns (address addr);
 ```
 ### advanced deploy script
 
@@ -132,7 +128,7 @@ contract DeployComplex is DeployLite {
     function deployComplex() public returns (address) {
         bytes memory args = abi.encode(1_000, 1);
 
-        DeployState state = deployState("Complex", args, true);
+        DeployState state = deployState("Complex", args);
 
         if (state == DeployState.None || state == DeployState.Older) {
             vm.broadcast();

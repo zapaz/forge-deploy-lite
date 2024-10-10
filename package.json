@@ -1,10 +1,10 @@
 {
   "name": "forge-deploy-lite",
-  "version": "0.4.7",
+  "version": "0.7.4",
   "description": "IdemPotent Script to Deploy Multiple Contracts across Multiple Chains and Register Addresses for Frontend Dapp",
   "main": "",
   "scripts": {
-    "all": "forge clean && forge fmt && forge build && forge test && pnpm install && pnpm deploy:deploy",
+    "all": "forge clean && forge fmt && forge build && forge test",
     "clean": "forge clean",
     "build": "forge build",
     "test": "forge test",
