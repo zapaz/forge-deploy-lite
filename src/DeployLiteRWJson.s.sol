@@ -169,8 +169,12 @@ contract DeployLiteRWJson is IDeployLiteRWJson, DeployLiteUtils {
             // remove key equal to `name`
             if (_stringEqual(names[i], name)) continue;
 
-            string memory jsonString = vm.parseJsonString(json, _nameKey(names[i]));
-            jsonNetwork = vm.serializeString(jsonNetworkKey, names[i], jsonString);
+            try vm.parseJsonString(json, _nameKey(names[i])) returns (string memory jsonString) {
+                jsonNetwork = vm.serializeString(jsonNetworkKey, names[i], jsonString);
+            } catch {
+                string[] memory jsonStringArray = vm.parseJsonStringArray(json, _nameKey(names[i]));
+                jsonNetwork = vm.serializeString(jsonNetworkKey, names[i], jsonStringArray);
+            }
         }
     }
 
@@ -179,8 +183,12 @@ contract DeployLiteRWJson is IDeployLiteRWJson, DeployLiteUtils {
         string memory jsonNetworkKey = _uniqueObjectKey();
 
         for (uint256 i = 0; i < names.length; i++) {
-            string memory jsonString = vm.parseJsonString(json, _nameKey(names[i]));
-            vm.serializeString(jsonNetworkKey, names[i], jsonString);
+            try vm.parseJsonString(json, _nameKey(names[i])) returns (string memory jsonString) {
+                vm.serializeString(jsonNetworkKey, names[i], jsonString);
+            } catch {
+                string[] memory jsonStringArray = vm.parseJsonStringArray(json, _nameKey(names[i]));
+                vm.serializeString(jsonNetworkKey, names[i], jsonStringArray);
+            }
         }
         return vm.serializeAddress(jsonNetworkKey, name, addr);
     }

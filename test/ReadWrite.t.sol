@@ -53,7 +53,7 @@ contract ReadWriteJsonTest is Test, DeployLiteRWJson {
 
         vm.serializeString("network", "chainName", "local");
         vm.serializeString("network", "num", "324");
-        // vm.serializeString("network", "arrray", "[1,2,3]");
+        vm.serializeString("network", "arrray", "[1,2,3]");
         vm.serializeString("network", "Id32", "0x1b65ea1a8e546cc3009bce9a1534d01fc5e09f04603be6a067de97db81614970");
         string memory jsonNetwork = vm.serializeString("network", "OK", "true");
 
