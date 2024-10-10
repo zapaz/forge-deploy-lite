@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: MIT
-pragma solidity ^0.8.0;
+pragma solidity ^0.8.12;
 
 import {IDeployLiteRWJson} from "./interfaces/IDeployLiteRWJson.sol";
 import {DeployLiteUtils} from "./DeployLiteUtils.s.sol";

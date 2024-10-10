@@ -65,7 +65,7 @@ The `Counter` deploy script is as follow, to be writen in a file `DeployCounter.
 
 ```solidity
 // SPDX-License-Identifier: MIT
-pragma solidity ^0.8.0;
+pragma solidity ^0.8.12;
 
 import {DeployLite} from "lib/forge-deploy-lite/DeployLite.s.sol";
 import {Counter} from "src/examples/Counter.sol";
@@ -119,7 +119,7 @@ Here is an example for `Complex.sol` contract:
 
 ```solidity
 // SPDX-License-Identifier: MIT
-pragma solidity ^0.8.0;
+pragma solidity ^0.8.12;
 
 import {DeployLite} from "../../src/DeployLite.s.sol";
 import {Complex} from "../../src/examples/Complex.sol";
