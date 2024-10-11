@@ -8,7 +8,7 @@ import {DeployLiteRWJson} from "./DeployLiteRWJson.s.sol";
 
 // import {console} from "forge-std/console.sol";
 
-contract DeployLite is Script, IDeployLite, DeployLiteRWJson {
+contract DeployLite is Script, IDeployLite, DeployLiteRWJson("addresses.json") {
     mapping(string => DeployState) private _state;
     mapping(string => bool) private _created;
 

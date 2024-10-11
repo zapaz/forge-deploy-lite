@@ -25,7 +25,8 @@ contract DeployLiteRWJson is IDeployLiteRWJson, DeployLiteUtils {
 
     mapping(string => address) internal _addresses;
 
-    string internal _jsonFile = "addresses.json";
+    string internal _jsonFileDefault;
+    string internal _jsonFile;
 
     bool internal _recording = true;
 
@@ -33,13 +34,15 @@ contract DeployLiteRWJson is IDeployLiteRWJson, DeployLiteUtils {
     string internal _networkKey;
     uint256 internal objectKeyIndex;
 
-    constructor() {
+    constructor(string memory jsonFileDefault_) {
         _networkId = vm.toString(block.chainid);
         _networkKey = string.concat(".", _networkId);
+        _jsonFileDefault = jsonFileDefault_;
+        _jsonFile = jsonFileDefault_;
     }
 
     function setJsonFile(string memory jsonFile_) public override(IDeployLiteRWJson) {
-        _jsonFile = jsonFile_;
+        _jsonFile = bytes(jsonFile_).length > 0 ? jsonFile_ : _jsonFileDefault;
     }
 
     function setRecording(bool recording_) public override(IDeployLiteRWJson) {
