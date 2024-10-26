@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: MIT
-pragma solidity ^0.8.0;
+pragma solidity ^0.8.12;
 
 import {IDeployLiteRWJson} from "./interfaces/IDeployLiteRWJson.sol";
 import {DeployLiteUtils} from "./DeployLiteUtils.s.sol";
@@ -25,7 +25,8 @@ contract DeployLiteRWJson is IDeployLiteRWJson, DeployLiteUtils {
 
     mapping(string => address) internal _addresses;
 
-    string internal _jsonFile = "addresses.json";
+    string internal _jsonFileDefault;
+    string internal _jsonFile;
 
     bool internal _recording = true;
 
@@ -33,13 +34,15 @@ contract DeployLiteRWJson is IDeployLiteRWJson, DeployLiteUtils {
     string internal _networkKey;
     uint256 internal objectKeyIndex;
 
-    constructor() {
+    constructor(string memory jsonFileDefault_) {
         _networkId = vm.toString(block.chainid);
         _networkKey = string.concat(".", _networkId);
+        _jsonFileDefault = jsonFileDefault_;
+        _jsonFile = jsonFileDefault_;
     }
 
     function setJsonFile(string memory jsonFile_) public override(IDeployLiteRWJson) {
-        _jsonFile = jsonFile_;
+        _jsonFile = bytes(jsonFile_).length > 0 ? jsonFile_ : _jsonFileDefault;
     }
 
     function setRecording(bool recording_) public override(IDeployLiteRWJson) {
@@ -169,8 +172,12 @@ contract DeployLiteRWJson is IDeployLiteRWJson, DeployLiteUtils {
             // remove key equal to `name`
             if (_stringEqual(names[i], name)) continue;
 
-            string memory jsonString = vm.parseJsonString(json, _nameKey(names[i]));
-            jsonNetwork = vm.serializeString(jsonNetworkKey, names[i], jsonString);
+            try vm.parseJsonString(json, _nameKey(names[i])) returns (string memory jsonString) {
+                jsonNetwork = vm.serializeString(jsonNetworkKey, names[i], jsonString);
+            } catch {
+                string[] memory jsonStringArray = vm.parseJsonStringArray(json, _nameKey(names[i]));
+                jsonNetwork = vm.serializeString(jsonNetworkKey, names[i], jsonStringArray);
+            }
         }
     }
 
@@ -179,8 +186,12 @@ contract DeployLiteRWJson is IDeployLiteRWJson, DeployLiteUtils {
         string memory jsonNetworkKey = _uniqueObjectKey();
 
         for (uint256 i = 0; i < names.length; i++) {
-            string memory jsonString = vm.parseJsonString(json, _nameKey(names[i]));
-            vm.serializeString(jsonNetworkKey, names[i], jsonString);
+            try vm.parseJsonString(json, _nameKey(names[i])) returns (string memory jsonString) {
+                vm.serializeString(jsonNetworkKey, names[i], jsonString);
+            } catch {
+                string[] memory jsonStringArray = vm.parseJsonStringArray(json, _nameKey(names[i]));
+                vm.serializeString(jsonNetworkKey, names[i], jsonStringArray);
+            }
         }
         return vm.serializeAddress(jsonNetworkKey, name, addr);
     }
