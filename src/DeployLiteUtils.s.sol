@@ -35,22 +35,18 @@ contract DeployLiteUtils is IDeployLiteUtils, Script {
         return (callerMode == VmSafe.CallerMode.Broadcast || callerMode == VmSafe.CallerMode.RecurrentBroadcast);
     }
 
-    function sliceBytes(bytes calldata data, uint256 start, uint256 end)
+    function sliceBytes(bytes memory data, uint256 start, uint256 end)
         public
         pure
         override(IDeployLiteUtils)
         returns (bytes memory)
     {
-        return bytes(data[start:end]);
-    }
-
-    function sliceString(string calldata data, uint256 start, uint256 end)
-        public
-        pure
-        override(IDeployLiteUtils)
-        returns (string memory)
-    {
-        return string(sliceBytes(bytes(data), start, end));
+        // return bytes(data[start:end]);
+        bytes memory b = new bytes(end - start);
+        for (uint256 i = start; i < end; i++) {
+            b[i - start] = data[i];
+        }
+        return b;
     }
 
     function _bytesPad5(uint256 n) internal pure returns (string memory) {

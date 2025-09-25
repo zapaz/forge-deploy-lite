@@ -153,11 +153,11 @@ contract DeployLite is Script, IDeployLite, DeployLiteRWJson("addresses.json") {
     }
 
     function _getCborLength(bytes memory bytecode) internal view returns (uint16) {
-        return bytecode.length < 2 ? 0 : uint16(bytes2(this.sliceBytes(bytecode, bytecode.length - 2, bytecode.length)));
+        return bytecode.length < 2 ? 0 : uint16(bytes2(sliceBytes(bytecode, bytecode.length - 2, bytecode.length)));
     }
 
     function _removeCbor(bytes memory bytecode) internal view returns (bytes memory) {
         uint256 len = _getCborLength(bytecode);
-        return (bytecode.length >= len) ? this.sliceBytes(bytecode, 0, bytecode.length - len) : bytecode;
+        return (bytecode.length >= len) ? sliceBytes(bytecode, 0, bytecode.length - len) : bytecode;
     }
 }
