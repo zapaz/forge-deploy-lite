@@ -2,9 +2,6 @@
 pragma solidity ^0.8.12;
 
 import {DeployLite} from "../../src/DeployLite.s.sol";
-import {Complex} from "../../src/examples/Complex.sol";
-
-import {console} from "forge-std/console.sol";
 
 contract DeployComplex is DeployLite {
     function deployComplex() public returns (address) {

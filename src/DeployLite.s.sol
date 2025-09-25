@@ -144,7 +144,7 @@ contract DeployLite is Script, IDeployLite, DeployLiteRWJson("addresses.json") {
         vm.selectFork(activeFork);
     }
 
-    function _isSameCode(bytes memory code1, bytes memory code2) internal view returns (bool) {
+    function _isSameCode(bytes memory code1, bytes memory code2) internal pure returns (bool) {
         return _bytesEqual(_removeCbor(code1), _removeCbor(code2));
     }
 
@@ -152,11 +152,11 @@ contract DeployLite is Script, IDeployLite, DeployLiteRWJson("addresses.json") {
         return addr.code.length > 0;
     }
 
-    function _getCborLength(bytes memory bytecode) internal view returns (uint16) {
+    function _getCborLength(bytes memory bytecode) internal pure returns (uint16) {
         return bytecode.length < 2 ? 0 : uint16(bytes2(sliceBytes(bytecode, bytecode.length - 2, bytecode.length)));
     }
 
-    function _removeCbor(bytes memory bytecode) internal view returns (bytes memory) {
+    function _removeCbor(bytes memory bytecode) internal pure returns (bytes memory) {
         uint256 len = _getCborLength(bytecode);
         return (bytecode.length >= len) ? sliceBytes(bytecode, 0, bytecode.length - len) : bytecode;
     }

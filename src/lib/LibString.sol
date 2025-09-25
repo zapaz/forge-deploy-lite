@@ -1,8 +1,6 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.12;
 
-import "forge-std/Script.sol";
-
 // Vectorized/LibString.sol
 // form https://github.com/Vectorized/solady/blob/main/src/utils/LibString.sol
 // from https://gist.github.com/Vectorized/56ac210117f9baa15ac74a9ae779cd1f

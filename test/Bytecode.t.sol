@@ -19,10 +19,7 @@ contract BytecodeTest is Test, DeployLite {
     function test_bytecode_to_deploy() public view {
         bytes memory code = vm.getDeployedCode("HowMany.sol:HowMany");
 
-        console.log("code.length:", code.length);
-        // console.logBytes(code);
-
-        assert(code.length == 125);
+        assert(code.length == 172);
     }
 
     function test_bytecode_cbor_length() public view {

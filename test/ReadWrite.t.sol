@@ -1,8 +1,8 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.12;
 
-import "forge-std/Test.sol";
-import "../src/DeployLiteRWJson.s.sol";
+import {Test, stdJson, console} from "forge-std/Test.sol";
+import {DeployLiteRWJson} from "../src/DeployLiteRWJson.s.sol";
 
 contract ReadWriteJsonTest is Test, DeployLiteRWJson("addresses.json") {
     using stdJson for string;

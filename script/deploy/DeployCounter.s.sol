@@ -2,7 +2,6 @@
 pragma solidity ^0.8.12;
 
 import {DeployLite} from "../../src/DeployLite.s.sol";
-import {Counter} from "../../src/examples/Counter.sol";
 
 contract DeployCounter is DeployLite {
     function deployCounter() public returns (address) {

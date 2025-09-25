@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.12;
 
-import "forge-std/Script.sol";
+import {console} from "forge-std/console.sol";
 
 import {DeployCounter} from "./deploy/DeployCounter.s.sol";
 import {DeployImmutable} from "./deploy/DeployImmutable.s.sol";

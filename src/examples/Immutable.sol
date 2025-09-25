@@ -2,11 +2,11 @@
 pragma solidity ^0.8.12;
 
 contract Immutable {
-    bytes32 public immutable hash;
+    bytes32 public immutable HASH;
     uint8 public immutable p;
 
     constructor(uint256 a, uint8 b) {
-        hash = keccak256(abi.encode(a));
+        HASH = keccak256(abi.encode(a));
         p = b << 1;
     }
 }
